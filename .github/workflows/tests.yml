@@ -88,6 +88,21 @@ jobs:
       - name: Tests ausführen
         run: php artisan test
 
+  skript-pruefen:
+    name: Einspielskript prüfen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Syntax prüfen
+        run: bash -n deploy/lima-city/vp-einspielen.sh
+
+      - name: ShellCheck
+        run: shellcheck -S warning deploy/lima-city/vp-einspielen.sh
+
   composer-lock-uebernehmen:
     name: composer.lock ins Repository übernehmen
     needs: tests

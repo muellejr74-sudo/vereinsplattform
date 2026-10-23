@@ -13,3 +13,7 @@ Diese Datei hält technische Entscheidungen fest, die **innerhalb** der freigege
 | T0-7 | Arbeit je Stufe auf eigenem Zweig, Übernahme nach `main` erst nach Abnahme (Pull Request) | Entspricht dem Update-Ablauf E87. |
 | T0-8 | Sitzungsdaten verschlüsselt (`SESSION_ENCRYPT=true`) | Sicherheit ohne Mehraufwand. |
 | T0-9 | Laravel-eigene Vorlagen-Workflows, KI-Anleitungen und Installationsskripte der Vorlage wurden **nicht** übernommen | Nicht benötigt bzw. Sicherheitsrisiko (Skripte aus dem Internet). |
+| T0-10 | **Einspielweg Variante B:** Der Server holt den Code per Nur-Lese-Schlüssel (GitHub „Deploy key“ ohne Schreibrecht) und installiert ihn mit `deploy/lima-city/vp-einspielen.sh` | Im lima-city-Konto liegen viele weitere Projekte; ein SSH-Schlüssel bei GitHub hätte Vollzugriff auf alle. Bei B hat GitHub keinen Zugang zum Server (Entscheidung des Betreibers am 23.10.2026). |
+| T0-11 | Das Skript schreibt nur in `~/vereinsplattform_test` und `~/vereinsplattform`, überschreibt nie die `.env`, sichert vor dem Einspielen und spielt Live nur aus `main` mit ausdrücklicher Bestätigung ein | Schutz der anderen Projekte im Konto und der Live-Daten (E85, E87). |
+| T0-12 | Die PHP-8.4-Einstellung in `public/.htaccess` wird beim Einspielen automatisch erzeugt | Andere Webseiten im Konto bleiben auf ihrer PHP-Version. |
+
