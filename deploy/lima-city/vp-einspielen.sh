@@ -140,7 +140,8 @@ info "Spiele Zweig '$ZWEIG' (Stand $KURZ) auf $UMGEBUNG ein"
 # ---------------------------------------------------------------------------
 if [[ ! -f "$ZIEL/.env" ]]; then
     info "Erster Aufruf: lege Vorlage für die Zugangsdaten an"
-    git --git-dir="$QUELLE" show "$COMMIT:.env.example" > "$ZIEL/.env"
+    # Nur NAME=Wert-Zeilen übernehmen, keine Hinweistexte (robuster beim Bearbeiten).
+    git --git-dir="$QUELLE" show "$COMMIT:.env.example" | grep -E '^[A-Z_][A-Z0-9_]*=' > "$ZIEL/.env"
     chmod 600 "$ZIEL/.env"
     sed -i \
         -e "s|^APP_ENV=.*|APP_ENV=$([[ $UMGEBUNG == live ]] && echo production || echo staging)|" \
@@ -160,6 +161,10 @@ if [[ ! -f "$ZIEL/.env" ]]; then
 fi
 
 grep -q "BITTE_EINTRAGEN" "$ZIEL/.env" && abbruch "In $ZIEL/.env sind noch Platzhalter 'BITTE_EINTRAGEN'. Bitte Zugangsdaten eintragen."
+if grep -nvE '^([A-Z_][A-Z0-9_]*=.*|#.*|[[:space:]]*)$' "$ZIEL/.env" >/dev/null; then
+    zeile="$(grep -nvE '^([A-Z_][A-Z0-9_]*=.*|#.*|[[:space:]]*)$' "$ZIEL/.env" | head -n1 | cut -d: -f1)"
+    abbruch "$ZIEL/.env ist fehlerhaft (Zeile $zeile ist weder NAME=Wert noch ein Kommentar). Bitte mit nano korrigieren."
+fi
 
 # ---------------------------------------------------------------------------
 # 2. Stand auspacken und Abhängigkeiten installieren (in eigenem Arbeitsordner)
