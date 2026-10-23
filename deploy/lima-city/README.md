@@ -61,7 +61,7 @@ chmod 700 ~/vp-einspielen.sh
 ### Schritt 4 – Datenbank-Zugangsdaten eingeben
 
 ```bash
-~/vp-einspielen.sh zugangsdaten test
+~/vp-einspielen.sh zugangsdaten test ZWEIG
 ```
 Das Skript fragt Datenbank-Server, Datenbank-Name (`db_425945_32`), Benutzer und Passwort ab (Werte aus der lima-city-Verwaltung → Datenbanken) und schreibt eine saubere `~/vereinsplattform_test/.env`. Das Passwort wird bei der Eingabe nicht angezeigt. Die Zugangsdaten bleiben ausschließlich auf dem Server. Eine vorhandene Datei wird vorher als `.env.alt-…` gesichert.
 

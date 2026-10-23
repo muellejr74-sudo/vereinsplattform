@@ -8,7 +8,7 @@
 # Aufruf:
 #   ~/vp-einspielen.sh test [ZWEIG]     Test-Umgebung (Standard-Zweig: main)
 #   ~/vp-einspielen.sh live             Live-Umgebung (immer Zweig main, mit Rückfrage)
-#   ~/vp-einspielen.sh zugangsdaten test|live
+#   ~/vp-einspielen.sh zugangsdaten test|live [ZWEIG]
 #                                       Datenbank-Zugangsdaten abfragen und sauber speichern
 #   ~/vp-einspielen.sh aktualisieren [ZWEIG]
 #                                       dieses Skript selbst aktualisieren (Standard: main)
@@ -134,15 +134,16 @@ if [[ "${1:-}" == "zugangsdaten" ]]; then
     case "${2:-}" in
         test) ZIEL="$ZIEL_TEST"; UMG=staging;    URL="https://test.regional-meine-wahl.de" ;;
         live) ZIEL="$ZIEL_LIVE"; UMG=production; URL="https://regional-meine-wahl.de" ;;
-        *) abbruch "Aufruf: $0 zugangsdaten test|live" ;;
+        *) abbruch "Aufruf: $0 zugangsdaten test|live [ZWEIG]" ;;
     esac
+    VORLAGE_ZWEIG="${3:-main}"
     pruefe_ziel "$ZIEL"
     vorlage="$ZIEL/.env.example"
     if [[ ! -f "$vorlage" ]]; then
         pruefe_voraussetzungen; aktualisiere_quelle
         vorlage="$(mktemp)"
-        git --git-dir="$QUELLE" show "main:.env.example" > "$vorlage" \
-            || abbruch "Keine Vorlage gefunden – bitte zuerst einmal einspielen."
+        git --git-dir="$QUELLE" show "$VORLAGE_ZWEIG:.env.example" > "$vorlage" \
+            || abbruch "Keine Vorlage im Zweig $VORLAGE_ZWEIG gefunden. Aufruf: $0 zugangsdaten ${2:-test} ZWEIG"
     fi
 
     alter_schluessel=""
@@ -338,7 +339,7 @@ if [[ ! -d "$ZIEL/storage" ]]; then
 fi
 rsync -a --delete \
     --exclude='/.env' \
-    --exclude='/.env.*' \
+    --exclude='/.env.alt-*' \
     --exclude='/storage/' \
     --exclude='/.vp-version' \
     "$BAU/" "$ZIEL/"
