@@ -8,7 +8,10 @@
 # Aufruf:
 #   ~/vp-einspielen.sh test [ZWEIG]     Test-Umgebung (Standard-Zweig: main)
 #   ~/vp-einspielen.sh live             Live-Umgebung (immer Zweig main, mit Rückfrage)
-#   ~/vp-einspielen.sh aktualisieren    dieses Skript selbst aus main aktualisieren
+#   ~/vp-einspielen.sh zugangsdaten test|live
+#                                       Datenbank-Zugangsdaten abfragen und sauber speichern
+#   ~/vp-einspielen.sh aktualisieren [ZWEIG]
+#                                       dieses Skript selbst aktualisieren (Standard: main)
 #
 # Sicherheitsregeln:
 #   - Das Skript schreibt AUSSCHLIESSLICH in ~/vereinsplattform_test bzw.
@@ -53,7 +56,16 @@ php84() { "$PHP_BIN" "$@"; }
 # Liest einen Wert aus einer .env-Datei (ohne Anführungszeichen).
 env_wert() {
     local datei="$1" schluessel="$2"
-    grep -E "^${schluessel}=" "$datei" | tail -n1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+    local roh
+    roh="$(grep -E "^${schluessel}=" "$datei" | tail -n1 | cut -d= -f2-)" || true
+    if [[ "$roh" == \'*\' ]]; then
+        roh="${roh#\'}"; printf '%s' "${roh%\'}"
+    elif [[ "$roh" == \"*\" ]]; then
+        roh="${roh#\"}"; roh="${roh%\"}"
+        roh="${roh//\\\"/\"}"; roh="${roh//\\\$/\$}"; printf '%s' "${roh//\\\\/\\}"
+    else
+        printf '%s' "$roh"
+    fi
 }
 
 pruefe_voraussetzungen() {
@@ -91,15 +103,92 @@ aktualisiere_quelle() {
 # Selbst-Aktualisierung
 # ---------------------------------------------------------------------------
 if [[ "${1:-}" == "aktualisieren" ]]; then
+    QUELL_ZWEIG="${2:-main}"
     pruefe_voraussetzungen
     aktualisiere_quelle
     neu="$(mktemp)"
-    git --git-dir="$QUELLE" show "main:deploy/lima-city/vp-einspielen.sh" > "$neu" \
-        || abbruch "Skript im Zweig main nicht gefunden"
+    git --git-dir="$QUELLE" show "$QUELL_ZWEIG:deploy/lima-city/vp-einspielen.sh" > "$neu" \
+        || abbruch "Skript im Zweig $QUELL_ZWEIG nicht gefunden"
     bash -n "$neu" || abbruch "Neue Skriptversion ist fehlerhaft – nicht übernommen"
     install -m 700 "$neu" "$0"
     rm -f "$neu"
     ok "Skript aktualisiert: $0"
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Zugangsdaten abfragen und eine saubere .env schreiben
+# ---------------------------------------------------------------------------
+# Wert für .env sicher einschließen (einfache Anführungszeichen = wörtlich).
+env_zitat() {
+    local wert="$1"
+    if [[ "$wert" != *"'"* ]]; then
+        printf "'%s'" "$wert"
+    else
+        wert="${wert//\\/\\\\}"; wert="${wert//\"/\\\"}"; wert="${wert//\$/\\\$}"
+        printf '"%s"' "$wert"
+    fi
+}
+
+if [[ "${1:-}" == "zugangsdaten" ]]; then
+    case "${2:-}" in
+        test) ZIEL="$ZIEL_TEST"; UMG=staging;    URL="https://test.regional-meine-wahl.de" ;;
+        live) ZIEL="$ZIEL_LIVE"; UMG=production; URL="https://regional-meine-wahl.de" ;;
+        *) abbruch "Aufruf: $0 zugangsdaten test|live" ;;
+    esac
+    pruefe_ziel "$ZIEL"
+    vorlage="$ZIEL/.env.example"
+    if [[ ! -f "$vorlage" ]]; then
+        pruefe_voraussetzungen; aktualisiere_quelle
+        vorlage="$(mktemp)"
+        git --git-dir="$QUELLE" show "main:.env.example" > "$vorlage" \
+            || abbruch "Keine Vorlage gefunden – bitte zuerst einmal einspielen."
+    fi
+
+    alter_schluessel=""
+    if [[ -f "$ZIEL/.env" ]]; then
+        alter_schluessel="$(env_wert "$ZIEL/.env" APP_KEY || true)"
+        cp -p "$ZIEL/.env" "$ZIEL/.env.alt-$(date +%Y%m%d-%H%M%S)"
+        warnung "Bisherige Datei gesichert als .env.alt-…"
+    fi
+
+    echo
+    echo "Bitte die Datenbank-Zugangsdaten aus der lima-city-Verwaltung eingeben."
+    read -r -p "  Datenbank-Server (Host): " db_host
+    read -r -p "  Datenbank-Name:          " db_name
+    read -r -p "  Datenbank-Benutzer:      " db_user
+    read -r -s -p "  Datenbank-Passwort (wird nicht angezeigt): " db_pass; echo
+    [[ -n "$db_host" && -n "$db_name" && -n "$db_user" && -n "$db_pass" ]] || abbruch "Alle vier Angaben sind nötig."
+
+    neu="$(mktemp)"
+    grep -E '^[A-Z_][A-Z0-9_]*=' "$vorlage" | while IFS= read -r zeile; do
+        name="${zeile%%=*}"
+        case "$name" in
+            APP_ENV)               echo "APP_ENV=$UMG" ;;
+            APP_DEBUG)             echo "APP_DEBUG=false" ;;
+            APP_URL)               echo "APP_URL=$URL" ;;
+            APP_KEY)               echo "APP_KEY=$alter_schluessel" ;;
+            LOG_LEVEL)             echo "LOG_LEVEL=warning" ;;
+            SESSION_SECURE_COOKIE) echo "SESSION_SECURE_COOKIE=true" ;;
+            DB_HOST)               echo "DB_HOST=$(env_zitat "$db_host")" ;;
+            DB_DATABASE)           echo "DB_DATABASE=$(env_zitat "$db_name")" ;;
+            DB_USERNAME)           echo "DB_USERNAME=$(env_zitat "$db_user")" ;;
+            DB_PASSWORD)           echo "DB_PASSWORD=$(env_zitat "$db_pass")" ;;
+            *)                     echo "$zeile" ;;
+        esac
+    done > "$neu"
+    install -m 600 "$neu" "$ZIEL/.env"
+    rm -f "$neu"
+    ok "Zugangsdaten gespeichert in $ZIEL/.env"
+
+    if [[ -f "$ZIEL/artisan" && -d "$ZIEL/vendor" ]]; then
+        info "Prüfe Datenbankverbindung"
+        if ( cd "$ZIEL" && php84 artisan tinker --execute='echo "Verbindung OK – MySQL ", \Illuminate\Support\Facades\DB::selectOne("select version() as v")->v;' ); then
+            echo; ok "Datenbank erreichbar"
+        else
+            warnung "Verbindung fehlgeschlagen – bitte Angaben prüfen und den Befehl wiederholen."
+        fi
+    fi
     exit 0
 fi
 
@@ -154,16 +243,16 @@ if [[ ! -f "$ZIEL/.env" ]]; then
         -e "s|^DB_USERNAME=.*|DB_USERNAME=BITTE_EINTRAGEN|" \
         -e "s|^DB_PASSWORD=.*|DB_PASSWORD=BITTE_EINTRAGEN|" \
         "$ZIEL/.env"
-    warnung "Bitte jetzt die Datenbank-Zugangsdaten eintragen:"
-    warnung "   nano $ZIEL/.env"
+    warnung "Bitte jetzt die Datenbank-Zugangsdaten eingeben lassen:"
+    warnung "   $0 zugangsdaten $UMGEBUNG"
     warnung "Danach dieses Skript erneut starten."
     exit 0
 fi
 
-grep -q "BITTE_EINTRAGEN" "$ZIEL/.env" && abbruch "In $ZIEL/.env sind noch Platzhalter 'BITTE_EINTRAGEN'. Bitte Zugangsdaten eintragen."
+grep -q "BITTE_EINTRAGEN" "$ZIEL/.env" && abbruch "In $ZIEL/.env sind noch Platzhalter 'BITTE_EINTRAGEN'. Bitte: $0 zugangsdaten $UMGEBUNG"
 if grep -nvE '^([A-Z_][A-Z0-9_]*=.*|#.*|[[:space:]]*)$' "$ZIEL/.env" >/dev/null; then
     zeile="$(grep -nvE '^([A-Z_][A-Z0-9_]*=.*|#.*|[[:space:]]*)$' "$ZIEL/.env" | head -n1 | cut -d: -f1)"
-    abbruch "$ZIEL/.env ist fehlerhaft (Zeile $zeile ist weder NAME=Wert noch ein Kommentar). Bitte mit nano korrigieren."
+    abbruch "$ZIEL/.env ist fehlerhaft (Zeile $zeile ist weder NAME=Wert noch ein Kommentar). Bitte neu anlegen: $0 zugangsdaten $UMGEBUNG"
 fi
 
 # ---------------------------------------------------------------------------

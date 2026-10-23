@@ -19,7 +19,8 @@ Der **Server holt sich den Code selbst** von GitHub und darf dort **nur lesen**.
 ~/vp-einspielen.sh test                 Test aus Zweig main
 ~/vp-einspielen.sh test ZWEIGNAME       Test aus einem bestimmten Zweig (z. B. zur Abnahme)
 ~/vp-einspielen.sh live                 Live aus main – mit Rückfrage und Sicherung vorab
-~/vp-einspielen.sh aktualisieren        das Skript selbst aktualisieren
+~/vp-einspielen.sh zugangsdaten test    Datenbank-Zugangsdaten abfragen und speichern
+~/vp-einspielen.sh aktualisieren ZWEIG  das Skript selbst aktualisieren (Standard: main)
 ```
 
 Ablauf beim Einspielen: Stand von GitHub holen → Abhängigkeiten installieren → **Sicherung** (Dateien + Datenbank, die letzten 10 werden aufbewahrt unter `~/backups/vereinsplattform/`) → Wartungsmodus → Dateien übertragen → Datenbank aktualisieren → Wartungsmodus aus → Kurzbericht.
@@ -57,28 +58,16 @@ chmod 700 ~/vp-einspielen.sh
 ```
 (`ZWEIG` = `main`, solange die Stufe noch nicht übernommen ist der Abnahme-Zweig, z. B. `stufe-0-grundgeruest`.)
 
-### Schritt 4 – Erster Aufruf: Vorlage für Zugangsdaten
+### Schritt 4 – Datenbank-Zugangsdaten eingeben
 
 ```bash
-~/vp-einspielen.sh test ZWEIG
+~/vp-einspielen.sh zugangsdaten test
 ```
-Das Skript legt `~/vereinsplattform_test/.env` an und stoppt.
+Das Skript fragt Datenbank-Server, Datenbank-Name (`db_425945_32`), Benutzer und Passwort ab (Werte aus der lima-city-Verwaltung → Datenbanken) und schreibt eine saubere `~/vereinsplattform_test/.env`. Das Passwort wird bei der Eingabe nicht angezeigt. Die Zugangsdaten bleiben ausschließlich auf dem Server. Eine vorhandene Datei wird vorher als `.env.alt-…` gesichert.
 
-### Schritt 5 – Datenbank-Zugangsdaten eintragen
+Kein Bearbeiten mit einem Texteditor nötig.
 
-```bash
-nano ~/vereinsplattform_test/.env
-```
-Die vier Zeilen mit `BITTE_EINTRAGEN` ersetzen (Werte aus der lima-city-Verwaltung → Datenbanken):
-```
-DB_HOST=…
-DB_DATABASE=db_425945_32
-DB_USERNAME=…
-DB_PASSWORD=…
-```
-Speichern: **Strg + O**, **Enter** · Beenden: **Strg + X**
-
-Die Zugangsdaten bleiben ausschließlich auf dem Server.
+### Schritt 5 – (entfällt)
 
 ### Schritt 6 – Einspielen
 
