@@ -78,7 +78,8 @@ class VereinsverwaltungTest extends TestCase
         $this->get('/verwaltung')->assertForbidden();
         $this->get('/verwaltung/vereine/'.$this->tvm->id.'/design')->assertForbidden();
         $this->put('/verwaltung/vereine/'.$this->tvm->id.'/design', ['farbe_primaer' => '#ff0000', 'module' => ['ticket']])->assertForbidden();
-        $this->put('/verwaltung/benutzer/1', ['name' => 'x', 'email' => 'x@y.de'])->assertForbidden();
+        $this->put('/verwaltung/benutzer/'.User::first()->id, ['name' => 'x', 'email' => 'x@y.de'])->assertForbidden();
+        $this->put('/verwaltung/benutzer/999999', ['name' => 'x', 'email' => 'x@y.de'])->assertForbidden();
 
         $this->assertNull($this->tvm->fresh()->farbe_primaer);
         $this->assertSame([], $this->tvm->fresh()->module());
