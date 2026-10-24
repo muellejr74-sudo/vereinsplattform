@@ -29,6 +29,9 @@ class Einlass
 
             return $this->ergebnis('rot', 'Andere Vorstellung', 'Diese Karte gilt für '.$v->veranstaltung->name.', '.$v->anzeige().'.');
         }
+        if (Abschlusssperre::istAbgeschlossen($vorstellung->id)) {
+            return $this->ergebnis('rot', 'Abgeschlossen', 'Diese Vorstellung ist bereits abgeschlossen.');
+        }
         if ($ticket->status === 'storniert') {
             return $this->ergebnis('rot', 'Storniert', $text.' – diese Karte ist storniert.');
         }

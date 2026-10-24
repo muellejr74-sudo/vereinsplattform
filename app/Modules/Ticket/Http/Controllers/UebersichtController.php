@@ -4,6 +4,7 @@ namespace App\Modules\Ticket\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Kern\Models\Veranstaltung;
+use App\Modules\Ticket\Dienste\Abschlussverwaltung;
 use App\Modules\Ticket\Dienste\Kontingent;
 use App\Modules\Ticket\Dienste\TicketZugriff;
 use App\Modules\Ticket\Models\Kartenauftrag;
@@ -30,6 +31,7 @@ class UebersichtController extends Controller
             'offen' => $zugriff->istDruckstelle($benutzer) ? Kartenauftrag::whereIn('status', ['angefordert', 'bestaetigt', 'gedruckt'])->count() : null,
             'stellen' => $zugriff->stellenVon($benutzer),
             'intern' => $zugriff->darfIntern($benutzer),
+            'abschlussOffen' => $benutzer->can('tickets.auswerten') ? app(Abschlussverwaltung::class)->offen() : collect(),
             'reservieren' => $zugriff->darfReservieren($benutzer) || $zugriff->siehtAlleReservierungen($benutzer),
             'ueberfaellig' => $benutzer->can('ticket.zahlungseingang') || $benutzer->can('ticket.reservierungen') ? Reservierung::ueberfaellig()->count() : 0,
         ]);

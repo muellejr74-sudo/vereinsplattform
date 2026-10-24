@@ -36,6 +36,7 @@ class Auftragsverwaltung
         if ($vorstellung->istVorbei()) {
             throw new InvalidArgumentException('Diese Vorstellung ist bereits vorbei.');
         }
+        Abschlusssperre::pruefen($vorstellung->id);
 
         $erlaubt = Ticketkategorie::where('veranstaltung_id', $vorstellung->veranstaltung_id)
             ->where('ist_freikarte', $art === 'freikarten')->pluck('id')->all();
@@ -64,6 +65,7 @@ class Auftragsverwaltung
             foreach ($mengen as $kategorieId => $anzahl) {
                 Auftragsposition::create(['kartenauftrag_id' => $auftrag->id, 'kategorie_id' => $kategorieId, 'anzahl' => $anzahl]);
             }
+            app(Druckstellenmeldung::class)->melden($auftrag);
             Protokoll::schreibe('ticket.auftrag_angefordert', $auftrag, [
                 'art' => $art, 'stelle' => $stelle?->name, 'anzahl' => array_sum($mengen), 'name' => $name,
             ], $durch);
@@ -88,6 +90,7 @@ class Auftragsverwaltung
             }
 
             $vorstellung = Vorstellung::whereKey($auftrag->vorstellung_id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($vorstellung->id);
             if ($vorstellung->kontingent === null) {
                 throw new InvalidArgumentException('Für diese Vorstellung ist noch kein Kontingent festgelegt.');
             }

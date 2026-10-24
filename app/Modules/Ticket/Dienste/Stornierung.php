@@ -18,6 +18,10 @@ class Stornierung
     /** Warum kann diese Karte nicht storniert werden? null = möglich. */
     public function hinderungsgrund(Ticket $ticket): ?string
     {
+        if (Abschlusssperre::istAbgeschlossen($ticket->vorstellung_id)) {
+            return 'Vorstellung abgeschlossen – nicht mehr stornierbar';
+        }
+
         return match ($ticket->status) {
             'storniert' => 'bereits storniert',
             'eingelassen' => 'bereits eingelassen – nicht mehr stornierbar',

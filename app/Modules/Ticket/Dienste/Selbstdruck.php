@@ -44,6 +44,7 @@ class Selbstdruck
 
         return DB::transaction(function () use ($stelle, $vorstellung, $mengen, $name, $durch, $kategorien) {
             $vorstellung = Vorstellung::whereKey($vorstellung->id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($vorstellung->id);
             if ($vorstellung->kontingent === null) {
                 throw new InvalidArgumentException('Für diese Vorstellung ist noch kein Kontingent festgelegt.');
             }

@@ -48,7 +48,7 @@ class TicketZugriff
             return false;
         }
 
-        foreach (['ticket.drucken', 'ticket.kategorien', 'ticket.kontingente', 'ticket.verkaufsstellen', 'ticket.reservierungen', 'ticket.abendkasse', 'ticket.stornieren', 'ticket.zahlungseingang'] as $recht) {
+        foreach (['ticket.drucken', 'ticket.kategorien', 'ticket.kontingente', 'ticket.verkaufsstellen', 'ticket.reservierungen', 'ticket.abendkasse', 'ticket.stornieren', 'ticket.zahlungseingang', 'ticket.auswertungen', 'ticket.abschluss'] as $recht) {
             if ($benutzer->can($recht)) {
                 return true;
             }

@@ -67,4 +67,8 @@
             @endif
         </section>
     @endif
+    {{-- Ergänzungen der Module (z. B. Ticketverwaltung: E-Mails an die Druckstelle) --}}
+    @if (\Illuminate\Support\Facades\View::exists('ticket::konto') && auth()->user()->can('ticket.drucken'))
+        @include('ticket::konto')
+    @endif
 @endsection

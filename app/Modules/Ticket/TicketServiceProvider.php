@@ -28,5 +28,8 @@ class TicketServiceProvider extends ServiceProvider
 
         // Menüpunkt „Tickets“ und Zugang zur Ticketverwaltung.
         Gate::define('tickets.nutzen', fn (User $benutzer) => app(TicketZugriff::class)->darfTicketsNutzen($benutzer));
+        Gate::define('tickets.auswerten', fn (User $b) => $b->can('ticket.auswertungen') || $b->can('ticket.abschluss'));
+        Gate::define('tickets.nachbuchen', fn (User $b) => $b->can('ticket.abschluss') || $b->can('ticket.abendkasse'));
+        Gate::define('tickets.notfallliste', fn (User $b) => $b->can('ticket.abendkasse') || $b->can('ticket.auswertungen') || $b->can('ticket.abschluss'));
     }
 }

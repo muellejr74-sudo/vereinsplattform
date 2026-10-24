@@ -1,9 +1,13 @@
 <?php
 
 use App\Modules\Ticket\Http\Controllers\AbendkasseController;
+use App\Modules\Ticket\Http\Controllers\AbschlussController;
 use App\Modules\Ticket\Http\Controllers\AuftraegeController;
+use App\Modules\Ticket\Http\Controllers\AuswertungController;
 use App\Modules\Ticket\Http\Controllers\EinlassController;
 use App\Modules\Ticket\Http\Controllers\EinstellungenController;
+use App\Modules\Ticket\Http\Controllers\MailEinstellungController;
+use App\Modules\Ticket\Http\Controllers\NachbuchungController;
 use App\Modules\Ticket\Http\Controllers\PruefenController;
 use App\Modules\Ticket\Http\Controllers\ReservierungenController;
 use App\Modules\Ticket\Http\Controllers\SelbstdruckController;
@@ -23,6 +27,9 @@ Route::post('/station/einlass', [EinlassController::class, 'scannen'])->middlewa
 
 // Öffentliche Prüfseite des Ticket-QR-Codes (E112)
 Route::get('/k/{code}', PruefenController::class)->where('code', '[A-Za-z0-9.\-]{10,40}')->middleware('throttle:60,1')->name('ticket.pruefen');
+
+// „Mein Konto“: E-Mails zu Druckaufträgen an/aus (E132)
+Route::put('/konto/druckauftrag-mails', MailEinstellungController::class)->middleware(['auth', 'zweifaktor'])->name('konto.druckauftragmails');
 
 Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tickets')->name('tickets.')->group(function () {
     Route::get('/', UebersichtController::class)->name('uebersicht');
@@ -116,5 +123,27 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
         Route::post('entfernen/{ticket}', [StornoController::class, 'entfernen'])->whereNumber('ticket')->name('entfernen');
         Route::post('leeren', [StornoController::class, 'leeren'])->name('leeren');
         Route::post('ausfuehren', [StornoController::class, 'ausfuehren'])->name('ausfuehren');
+    });
+
+    // Stufe 4b: Auswertung, Abschluss, Nachbuchen, Notfallliste (E2a, E4, E79, E129, E131)
+    Route::prefix('vorstellungen/{vorstellung}')->whereNumber('vorstellung')->group(function () {
+        Route::middleware('can:tickets.auswerten')->group(function () {
+            Route::get('auswertung', [AuswertungController::class, 'show'])->name('auswertung');
+            Route::get('abschlussbericht.pdf', [AuswertungController::class, 'bericht'])->name('auswertung.bericht');
+            Route::get('abrechnung/{stelle}.pdf', [AuswertungController::class, 'abrechnung'])->whereNumber('stelle')->name('auswertung.abrechnung');
+            Route::get('export/{liste}.csv', [AuswertungController::class, 'csv'])->whereIn('liste', ['karten', 'freikarten', 'abrechnung'])->name('auswertung.csv');
+        });
+        Route::get('notfallliste.pdf', [AuswertungController::class, 'notfallliste'])->middleware('can:tickets.notfallliste')->name('notfallliste');
+        Route::middleware('can:ticket.abschluss')->group(function () {
+            Route::get('abschluss', [AbschlussController::class, 'show'])->name('abschluss');
+            Route::post('abschluss', [AbschlussController::class, 'abschliessen']);
+            Route::post('abschluss/bereinigen', [AbschlussController::class, 'bereinigen'])->name('abschluss.bereinigen');
+        });
+        Route::post('abschluss/rueckgaengig', [AbschlussController::class, 'rueckgaengig'])->name('abschluss.rueckgaengig');
+        Route::middleware('can:tickets.nachbuchen')->group(function () {
+            Route::get('nachbuchen', [NachbuchungController::class, 'show'])->name('nachbuchen');
+            Route::post('nachbuchen/verkauf', [NachbuchungController::class, 'verkauf'])->name('nachbuchen.verkauf');
+            Route::post('nachbuchen/freikarten', [NachbuchungController::class, 'freikarten'])->name('nachbuchen.freikarten');
+        });
     });
 });
