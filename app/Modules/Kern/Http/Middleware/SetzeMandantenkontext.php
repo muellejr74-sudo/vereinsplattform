@@ -4,6 +4,7 @@ namespace App\Modules\Kern\Http\Middleware;
 
 use App\Modules\Kern\Mandanten\Mandantenkontext;
 use App\Modules\Kern\Models\Mandant;
+use App\Modules\Kern\Rechte\Berechtigung;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,11 +19,12 @@ class SetzeMandantenkontext
 {
     public const SITZUNG = 'mandant_id';
 
-    public function __construct(private Mandantenkontext $kontext) {}
+    public function __construct(private Mandantenkontext $kontext, private Berechtigung $berechtigung) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         $this->kontext->leeren();
+        $this->berechtigung->vergessen();
         $benutzer = Auth::user();
 
         if ($benutzer && ! $benutzer->aktiv) {

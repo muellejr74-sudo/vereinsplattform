@@ -4,6 +4,10 @@ namespace Tests;
 
 use App\Models\User;
 use App\Modules\Kern\Dienste\Totp;
+use App\Modules\Kern\Mandanten\Mandantenkontext;
+use App\Modules\Kern\Models\Mandant;
+use App\Modules\Kern\Models\Rechtevergabe;
+use App\Modules\Kern\Rechte\Rechtekatalog;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -22,6 +26,26 @@ abstract class TestCase extends BaseTestCase
         ])->save();
 
         return $admin->fresh();
+    }
+
+    /** Person mit Rechten in einem Verein (Mitgliedschaft wird angelegt). */
+    protected function personMitRechten(Mandant $verein, array $rechte, array $attribute = []): User
+    {
+        $person = User::factory()->create($attribute);
+        $person->vereine()->attach($verein->id);
+        app(Mandantenkontext::class)->fuer($verein, function () use ($person, $rechte) {
+            foreach ($rechte as $recht) {
+                Rechtevergabe::create(['user_id' => $person->id, 'recht' => $recht]);
+            }
+        });
+
+        return $person;
+    }
+
+    /** Vereinsadmin nach Vorlage. */
+    protected function vereinsadmin(Mandant $verein, array $attribute = []): User
+    {
+        return $this->personMitRechten($verein, Rechtekatalog::vorlageVereinsadmin(), $attribute);
     }
 
     protected function aktuellerCode(int $verschiebungSchritte = 0): string

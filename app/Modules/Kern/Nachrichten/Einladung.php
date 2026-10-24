@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 /** Einladung für ein neu angelegtes Konto: Die Person legt ihr Passwort selbst fest. */
 class Einladung extends Notification
 {
-    public function __construct(public string $token) {}
+    public function __construct(public string $token, public ?string $verein = null) {}
 
     /** @return list<string> */
     public function via(object $empfaenger): array
@@ -24,10 +24,12 @@ class Einladung extends Notification
         return (new MailMessage)
             ->subject('Ihr Zugang zur '.config('app.name'))
             ->greeting('Hallo '.$empfaenger->name.',')
-            ->line('für Sie wurde ein Zugang zur '.config('app.name').' angelegt.')
+            ->line($this->verein
+                ? 'für Sie wurde ein Zugang zur '.config('app.name').' angelegt, damit Sie für „'.$this->verein.'“ mitarbeiten können.'
+                : 'für Sie wurde ein Zugang zur '.config('app.name').' angelegt.')
             ->line('Ihre Anmeldung erfolgt mit dieser E-Mail-Adresse. Bitte legen Sie über den folgenden Link Ihr persönliches Passwort fest.')
             ->action('Passwort festlegen', $link)
-            ->line('Der Link ist '.$tage.' Tage gültig. Danach kann der Plattformbetreiber eine neue Einladung senden.')
+            ->line('Der Link ist '.$tage.' Tage gültig. Danach kann eine neue Einladung gesendet werden.')
             ->salutation('Viele Grüße'."\n".config('app.name'));
     }
 }

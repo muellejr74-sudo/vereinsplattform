@@ -8,6 +8,7 @@ use App\Modules\Kern\Dienste\Protokoll;
 use App\Modules\Kern\Http\Controllers\PasswortController;
 use App\Modules\Kern\Models\Mandant;
 use App\Modules\Kern\Nachrichten\Einladung;
+use App\Modules\Kern\Rechte\Rechteverwaltung;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,16 @@ class BenutzerController extends Controller
             ->paginate(50)
             ->withQueryString();
 
-        return view('kern::verwaltung.benutzer.index', ['benutzer' => $benutzer, 'suche' => $suche]);
+        // Plattformweite Übersicht für den Super-Admin (bewusst vereinsübergreifend, E93):
+        // In welchen Vereinen ist jemand Vereinsadmin (Recht „Rechte vergeben“)?
+        $admins = DB::table('rechtevergaben')
+            ->where('recht', 'rechte.vergeben')
+            ->whereIn('user_id', $benutzer->pluck('id'))
+            ->get(['user_id', 'mandant_id'])
+            ->groupBy('user_id')
+            ->map(fn ($zeilen) => $zeilen->pluck('mandant_id')->map(fn ($id) => (int) $id)->all());
+
+        return view('kern::verwaltung.benutzer.index', ['benutzer' => $benutzer, 'suche' => $suche, 'admins' => $admins]);
     }
 
     public function create(): View
@@ -95,13 +105,16 @@ class BenutzerController extends Controller
                 Protokoll::schreibe('benutzer.geaendert', $person, ['geaendert' => $aenderungen]);
             }
 
-            $ergebnis = $person->vereine()->sync($daten['vereine'] ?? []);
+            // Über die Rechteverwaltung, damit beim Entfernen auch die Rechte in diesem Verein gelöscht werden.
+            $rechteverwaltung = app(Rechteverwaltung::class);
+            $bisher = $person->vereine()->pluck('mandanten.id')->all();
+            $neu = array_map('intval', $daten['vereine'] ?? []);
 
-            foreach ($ergebnis['attached'] as $id) {
-                Protokoll::schreibe('benutzer.verein_zugeordnet', $person, ['verein' => Mandant::find($id)?->kuerzel], null, (int) $id);
+            foreach (array_diff($neu, $bisher) as $id) {
+                $rechteverwaltung->mitgliedschaftAnlegen($person, Mandant::findOrFail($id));
             }
-            foreach ($ergebnis['detached'] as $id) {
-                Protokoll::schreibe('benutzer.verein_entfernt', $person, ['verein' => Mandant::find($id)?->kuerzel], null, (int) $id);
+            foreach (array_diff($bisher, $neu) as $id) {
+                $rechteverwaltung->mitgliedschaftEntfernen($person, Mandant::findOrFail($id));
             }
         });
 

@@ -11,6 +11,7 @@
     --farbe-primaer: #1f4e79;
     --farbe-primaer-text: #ffffff;
     --farbe-sekundaer: #e8eef5;
+    --farbe-sekundaer-text: #1b1b18;
     --farbe-text: #1b1b18;
     --farbe-hintergrund: #f7f7f5;
     --farbe-rand: #dcdcd7;
@@ -162,7 +163,7 @@ a { color: var(--farbe-primaer); }
 .formular input:focus, .formular select:focus, .formular textarea:focus { outline: 2px solid var(--farbe-primaer); outline-offset: 1px; }
 .formular fieldset { border: 1px solid var(--farbe-rand); border-radius: var(--radius); margin-top: 0.6rem; }
 .formular .auswahl { font-weight: normal; display: flex; gap: 0.5rem; align-items: flex-start; }
-.formular .auswahl input { margin-top: 0.3rem; width: 1.1rem; height: 1.1rem; }
+.formular .auswahl input { margin-top: 0.3rem; width: 1.1rem; height: 1.1rem; flex: 0 0 1.1rem; }
 
 .formular--zeile { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: var(--abstand); }
 .formular--zeile label { margin-top: 0; width: 100%; }
@@ -185,13 +186,13 @@ a { color: var(--farbe-primaer); }
 .status--fertig { background: var(--status-fertig); }
 .status--offen { background: var(--status-offen); }
 .status--storniert { background: var(--status-storniert); }
-.marke { display: inline-block; padding: 0 0.5rem; border-radius: 1rem; font-size: 0.75rem; background: var(--farbe-sekundaer); }
+.marke { display: inline-block; padding: 0 0.5rem; border-radius: 1rem; font-size: 0.75rem; background: var(--farbe-sekundaer); color: var(--farbe-sekundaer-text); }
 
 /* Tabellen – auf dem Handy als Karten */
 .tabelle-rahmen { overflow-x: auto; }
 .tabelle { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--farbe-rand); border-radius: var(--radius); }
 .tabelle th, .tabelle td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--farbe-rand); vertical-align: top; }
-.tabelle th { background: var(--farbe-sekundaer); font-size: 0.9rem; }
+.tabelle th { background: var(--farbe-sekundaer); color: var(--farbe-sekundaer-text); font-size: 0.9rem; }
 .tabelle--klein { font-size: 0.9rem; }
 .tabelle .aktionen { white-space: nowrap; }
 .tabelle .aktionen > * + * { margin-left: 0.75rem; }
@@ -225,7 +226,7 @@ a { color: var(--farbe-primaer); }
 .angaben dd { margin: 0; }
 .codes { columns: 2; font-size: 1.1rem; }
 .codes code, .schluessel { font-family: ui-monospace, monospace; letter-spacing: 0.05rem; }
-.schluessel { display: inline-block; padding: 0.5rem; background: var(--farbe-sekundaer); border-radius: var(--radius); word-break: break-all; }
+.schluessel { display: inline-block; padding: 0.5rem; background: var(--farbe-sekundaer); color: var(--farbe-sekundaer-text); border-radius: var(--radius); word-break: break-all; }
 .qr { margin: 0.75rem 0; }
 .qr svg { width: 220px; height: 220px; max-width: 100%; background: #fff; }
 .schritte li { margin-bottom: 0.75rem; }
@@ -240,3 +241,21 @@ a { color: var(--farbe-primaer); }
     .kopfzeile, .fusszeile, .formular, .knopf, form { display: none !important; }
     .karte { border: 0; }
 }
+
+/* ------------------------------------------------------------------
+ * Stufe 1b: Vereinslogo, Rechte, Design
+ * ------------------------------------------------------------------ */
+.logo { display: inline-flex; align-items: center; gap: 0.6rem; }
+.logo__bild { height: 2.5rem; width: auto; max-width: 8rem; object-fit: contain; background: #fff; border-radius: 0.25rem; padding: 0.15rem; }
+
+.rechte-gruppe { border: 1px solid var(--farbe-rand); border-radius: var(--radius); padding: 0.5rem 1rem 0.75rem; margin-top: 0.75rem; }
+.rechte-gruppe legend { font-weight: 700; padding: 0 0.25rem; }
+.rechte-gruppe .auswahl { margin-top: 0.4rem; }
+.recht--aus { color: #8a8a84; }
+.zusatz { font-size: 0.8rem; color: #6b6b66; margin-left: 0.25rem; }
+
+.farbwahl { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.formular .farbwahl input[type="color"] { width: 3.5rem; height: 2.75rem; padding: 0.15rem; border: 1px solid var(--farbe-rand); border-radius: var(--radius); background: #fff; }
+.formular .farbwahl input[type="text"] { max-width: 9rem; font-family: ui-monospace, monospace; }
+.logo-vorschau { max-height: 5rem; max-width: 14rem; border: 1px solid var(--farbe-rand); border-radius: var(--radius); padding: 0.25rem; background: #fff; }
+.meldung--hinweis { background: #fff4e5; border-color: var(--status-offen); }

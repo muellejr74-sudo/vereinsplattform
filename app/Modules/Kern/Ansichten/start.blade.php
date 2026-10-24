@@ -32,7 +32,10 @@
     @if ($aktiverVerein)
         <section class="karte">
             <h2>{{ $aktiverVerein->name }}</h2>
-            <p class="hinweis">Die Funktionen für Vereine (Veranstaltungen, Tickets, Saal) folgen in den nächsten Ausbaustufen.</p>
+            @can('verein.verwalten')
+                <p><a class="knopf" href="{{ route('verein.uebersicht') }}">Verein verwalten</a></p>
+            @endcan
+            <p class="hinweis">Die Funktionen für Veranstaltungen, Tickets und Saal folgen in den nächsten Ausbaustufen.</p>
         </section>
     @endif
 

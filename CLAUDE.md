@@ -22,6 +22,7 @@ Sie liegen im Claude-Projekt „Ticketverkauf“:
 ## Kommunikation
 
 - Mit dem Betreiber wird **auf Deutsch** und **ohne unnötige Fachbegriffe** kommuniziert.
+- **Server-Schritte immer mit Verbindungsanleitung** (Regel A-1, der Betreiber ist Laie): zuerst `ssh muellejr@muellejr.lima-ssh.de` nennen und den Hinweis „Steht vorne `PS C:\…`, bist du noch auf deinem Rechner – steht vorne `muellejr@…`, bist du auf dem Server“. Befehle einzeln, mit Rückfragen und Erfolgsmerkmal, am Ende `exit`. Für Befehle ohne Rückfragen zusätzlich die Einzeilen-Variante `ssh -t muellejr@muellejr.lima-ssh.de "…"`.
 - Bezeichner im Code dürfen deutsch oder englisch sein, sollen aber innerhalb eines Moduls einheitlich bleiben. Oberflächentexte sind deutsch.
 
 ## Technik (beschlossen)

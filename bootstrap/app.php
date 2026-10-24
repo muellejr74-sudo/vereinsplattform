@@ -2,6 +2,7 @@
 
 use App\Modules\Kern\Http\Middleware\NurSuperAdmin;
 use App\Modules\Kern\Http\Middleware\SetzeMandantenkontext;
+use App\Modules\Kern\Http\Middleware\VereinErforderlich;
 use App\Modules\Kern\Http\Middleware\ZweiFaktorEingerichtet;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'superadmin' => NurSuperAdmin::class,
             'zweifaktor' => ZweiFaktorEingerichtet::class,
+            'verein' => VereinErforderlich::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('anmeldung'));
