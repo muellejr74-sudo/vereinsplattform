@@ -11,6 +11,7 @@ use App\Modules\Kern\Models\Station;
 use App\Modules\Kern\Models\Stationsbesetzung;
 use App\Modules\Kern\Models\Stationsgeraet;
 use App\Modules\Kern\Models\Vorstellung;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -42,13 +43,30 @@ class StationenController extends Controller
             'reihenfolge' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ], [], ['name' => 'Name', 'art' => 'Art']);
         $daten['mehrere_geraete'] = $request->boolean('mehrere_geraete');
-        $daten['reihenfolge'] ??= ((int) Station::max('reihenfolge')) + 10;
-
         $neu = ! $station?->exists;
+        if (! isset($daten['reihenfolge'])) {
+            unset($daten['reihenfolge']);
+            if ($neu) {
+                $daten['reihenfolge'] = ((int) Station::max('reihenfolge')) + 10; // neue Station ans Ende
+            }
+        }
         $station = $neu ? Station::create($daten) : tap($station)->update($daten);
         Protokoll::schreibe($neu ? 'station.angelegt' : 'station.geaendert', $station, ['name' => $station->name]);
 
         return back()->with('hinweis', 'Station „'.$station->name.'“ gespeichert.');
+    }
+
+    /** Reihenfolge per Ziehen oder Pfeilen (Wunsch des Betreibers): Liste der Stations-Kennungen in neuer Folge. */
+    public function reihenfolge(Request $request): JsonResponse
+    {
+        $ids = array_values(array_unique(array_map('intval', (array) $request->validate(['ids' => ['required', 'array', 'max:200'], 'ids.*' => ['integer']])['ids'])));
+        $stationen = Station::whereIn('id', $ids)->get()->keyBy('id');
+        abort_if($stationen->count() !== count($ids), 422);
+        foreach ($ids as $i => $id) {
+            $stationen[$id]->update(['reihenfolge' => ($i + 1) * 10]);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     public function loeschen(Station $station): RedirectResponse

@@ -120,6 +120,7 @@ Route::middleware('auth')->group(function () {
             Route::middleware('can:stationen.verwalten')->group(function () {
                 Route::get('stationen', [StationenController::class, 'index'])->name('stationen');
                 Route::post('stationen', [StationenController::class, 'speichern'])->name('stationen.neu');
+                Route::post('stationen/reihenfolge', [StationenController::class, 'reihenfolge'])->name('stationen.reihenfolge');
                 Route::put('stationen/{station}', [StationenController::class, 'speichern'])->whereNumber('station')->name('stationen.speichern');
                 Route::delete('stationen/{station}', [StationenController::class, 'loeschen'])->whereNumber('station')->name('stationen.loeschen');
             });

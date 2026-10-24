@@ -10,42 +10,42 @@
     <section class="karte">
         <h2>Kategorien und Preise</h2>
         <p class="hinweis">Gelten für alle Vorstellungen. Abweichende Preise für einzelne Vorstellungen weiter unten.</p>
-        <div class="tabelle-rahmen">
-            <table class="tabelle">
-                <thead><tr><th>Kategorie</th><th>Preis</th><th></th></tr></thead>
-                <tbody>
-                @foreach ($kategorien as $k)
-                    <tr>
-                        @if ($k->ist_freikarte)
-                            <td data-titel="Kategorie">{{ $k->name }} <span class="hinweis">(fest)</span></td>
-                            <td data-titel="Preis">0,00 €</td><td></td>
-                        @else
-                            <td colspan="2" style="padding:0">
-                                @can('ticket.kategorien')
-                                    <form method="post" action="{{ route('tickets.kategorien.speichern', [$veranstaltung, $k]) }}" class="formular formular--zeile" style="margin:0;padding:0.5rem 0.75rem">
-                                        @csrf @method('put')
-                                        <div class="feld"><label class="sr" for="kn{{ $k->id }}">Name</label><input id="kn{{ $k->id }}" name="name" value="{{ $k->name }}" maxlength="40" required></div>
-                                        <div class="feld" style="flex:0 0 7rem"><label class="sr" for="kp{{ $k->id }}">Preis</label><input id="kp{{ $k->id }}" name="preis" value="{{ number_format($k->preis_cent / 100, 2, ',', '') }}" inputmode="decimal" required></div>
-                                        <input type="hidden" name="reihenfolge" value="{{ $k->reihenfolge }}">
-                                        <button type="submit" class="knopf knopf--zweit">Speichern</button>
-                                    </form>
-                                @else
-                                    <div style="padding:0.5rem 0.75rem">{{ $k->name }} · {{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</div>
-                                @endcan
-                            </td>
-                            <td class="aktionen">
-                                @can('ticket.kategorien')
-                                    <form method="post" action="{{ route('tickets.kategorien.loeschen', [$veranstaltung, $k]) }}" onsubmit="return confirm('Kategorie löschen?')">
-                                        @csrf @method('delete') <button type="submit" class="link-knopf">Löschen</button>
-                                    </form>
-                                @endcan
-                            </td>
-                        @endif
-                    </tr>
+        @can('ticket.kategorien')
+            @include('kern::teile.sortierbar')
+            <p class="hinweis">Reihenfolge (so erscheinen die Kategorien beim Verkauf): am Griff ☰ ziehen oder mit ▲ ▼. Zum Bearbeiten antippen.</p>
+            <ul class="sortier-liste" data-sortierbar data-url="{{ route('tickets.kategorien.reihenfolge', $veranstaltung) }}" data-token="{{ csrf_token() }}">
+                @foreach ($kategorien->where('ist_freikarte', false) as $k)
+                    <li data-id="{{ $k->id }}">
+                        <details>
+                            <summary>
+                                <span class="griff" title="Zum Verschieben ziehen" aria-hidden="true">☰</span>
+                                <span class="sortier-name">{{ $k->name }}<span class="marke">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></span>
+                                <span class="sortier-knoepfe">
+                                    <button type="button" data-schieben="hoch" aria-label="{{ $k->name }} nach oben">▲</button>
+                                    <button type="button" data-schieben="runter" aria-label="{{ $k->name }} nach unten">▼</button>
+                                </span>
+                                <span class="sortier-bearbeiten-knopf">✎</span>
+                            </summary>
+                            <form method="post" action="{{ route('tickets.kategorien.speichern', [$veranstaltung, $k]) }}" class="formular">
+                                @csrf @method('put')
+                                <label for="kn{{ $k->id }}">Name</label><input id="kn{{ $k->id }}" name="name" value="{{ $k->name }}" maxlength="40" required>
+                                <label for="kp{{ $k->id }}">Preis (€)</label><input id="kp{{ $k->id }}" name="preis" value="{{ number_format($k->preis_cent / 100, 2, ',', '') }}" inputmode="decimal" required>
+                                <div class="knopfzeile">
+                                    <button type="submit" class="knopf">Speichern</button>
+                                    <button type="submit" form="kl{{ $k->id }}" class="link-knopf">Löschen</button>
+                                </div>
+                            </form>
+                            <form id="kl{{ $k->id }}" method="post" action="{{ route('tickets.kategorien.loeschen', [$veranstaltung, $k]) }}" onsubmit="return confirm('Kategorie „{{ $k->name }}“ löschen?')">@csrf @method('delete')</form>
+                        </details>
+                    </li>
                 @endforeach
-                </tbody>
-            </table>
-        </div>
+            </ul>
+            <p class="hinweis">Freikarte – 0,00 € (feste Kategorie, immer vorhanden)</p>
+        @else
+            <ul>
+                @foreach ($kategorien as $k)<li>{{ $k->name }} · {{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</li>@endforeach
+            </ul>
+        @endcan
         @can('ticket.kategorien')
             <form method="post" action="{{ route('tickets.kategorien.neu', $veranstaltung) }}" class="formular formular--zeile" style="margin-top:1rem">
                 @csrf
