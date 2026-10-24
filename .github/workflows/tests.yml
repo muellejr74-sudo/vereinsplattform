@@ -86,7 +86,22 @@ jobs:
         run: php artisan key:generate
 
       - name: Tests ausführen
-        run: php artisan test
+        run: |
+          # Fehlgeschlagene Tests zusätzlich als Hinweis ("Annotation") ausgeben,
+          # damit sie direkt in der Übersicht auf GitHub sichtbar sind.
+          php artisan test --log-junit junit.xml || {
+            php -r '
+              $x = @simplexml_load_file("junit.xml");
+              if ($x) {
+                foreach ($x->xpath("//testcase[failure or error]") as $t) {
+                  $f = $t->failure ?: $t->error;
+                  $text = str_replace(["%", "\r", "\n"], ["%25", "%0D", "%0A"], substr((string) $f, 0, 1500));
+                  echo "::error title=" . $t["class"] . "::" . $t["name"] . "%0A" . $text . PHP_EOL;
+                }
+              }
+            '
+            exit 1
+          }
 
   skript-pruefen:
     name: Einspielskript prüfen
