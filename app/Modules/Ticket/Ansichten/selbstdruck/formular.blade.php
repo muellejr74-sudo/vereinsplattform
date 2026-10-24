@@ -11,7 +11,8 @@
             <p>Es gibt keine kommenden Vorstellungen.</p>
         @else
             @php $erste = $vorstellungen->firstWhere('id', (int) old('vorstellung_id', $vorauswahl)) ?? $vorstellungen->first(); @endphp
-            <form method="post" action="{{ route('tickets.selbstdruck.store') }}" class="formular" data-frei-aus="#vorstellung_id">
+            <form method="post" action="{{ route('tickets.selbstdruck.store') }}" class="formular" data-frei-aus="#vorstellung_id" target="_blank"
+                  onsubmit="var f = this, v = f.vorstellung_id.value; setTimeout(function () { location.href = '{{ route('tickets.selbstdruck.create') }}?vorstellung=' + v; }, 1200);">
                 @csrf
                 @if ($stellen->count() > 1)
                     <label for="verkaufsstelle_id">Verkaufsstelle</label>
@@ -52,7 +53,7 @@
 
                 <button type="submit" class="knopf knopf--gross">Karten erzeugen und drucken</button>
             </form>
-            <p class="hinweis">Die Karten entstehen sofort mit Nummer und belegen das Kontingent. Danach öffnet sich das Etiketten-PDF zum Drucken.</p>
+            <p class="hinweis">Die Karten entstehen sofort mit Nummer und belegen das Kontingent. Sie öffnen sich in einem neuen Tab zum Drucken – diese Seite ist danach gleich bereit für den nächsten Verkauf.</p>
         @endif
     </section>
 @endsection

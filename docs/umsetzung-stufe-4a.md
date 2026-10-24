@@ -29,6 +29,7 @@ Freigegeben am 24.10.2026 (P-5.4). Fachliche Grundlage: E1, E4b, E40–E46a, E11
 | T4a-22 | **Kartenbestellung und Freikarten-Anforderung höchstens so viele wie frei:** Sofort-Hinweis beim Eintippen und Sperre auf dem Server. Belegt wird weiterhin erst mit der Bestätigung (E30). | Wunsch bei der Abnahme. |
 | T4a-23 | **Verkaufsstelle druckt selbst** (E128): Haken je Verkaufsstelle; Seite „Karten verkaufen und drucken“ (Plus/Minus, Sofort-Prüfung, optional Name). Karten entstehen sofort als „ausgegeben an Stelle X“ (ohne Druckstelle, unter Sperre gegen Überbuchung), Etiketten-PDF und Nachdruck eigener Karten. Eigener Kartenauftrag mit Vermerk „Selbstdruck“, damit die Abrechnung je Stelle (4b) stimmt. | Freigegeben am 24.10.2026. |
 | T4a-24 | **Verkaufsstellen-Seite mit Auswahl oben:** Auswahlliste aller Stellen plus „+ Neue Verkaufsstelle anlegen“; darunter genau eine Karte. Nach dem Speichern bleibt die Stelle gewählt. | Wunsch bei der Abnahme: keine lange Liste mehr. |
+| T4a-25 | **Selbstdruck in neuem Tab:** „Karten erzeugen und drucken“ öffnet die neuen Karten in einem neuen Tab (Drucken, Nachdruck, „Fertig – Tab schließen“); die Verkaufsseite lädt sich neu (Menge 0, aktuelle freie Plätze, gleiche Vorstellung). | Wunsch bei der Abnahme: gleich weiterverkaufen. |
 | T4a-14 | Rechte: „Abendkasse“ und „Stornieren“ aktiv; **neues sensibles Recht „Zahlungseingang vermerken“** (E125). „Auswertungen“ und „Abschluss“ folgen mit Stufe 4b. | |
 
 ## Ehrlicher Hinweis zu den Tests

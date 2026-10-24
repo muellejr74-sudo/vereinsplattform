@@ -4,7 +4,7 @@
 
 @section('inhalt')
     <section class="karte karte--schmal">
-        <h1>{{ $auftrag->tickets->count() }} Karten erzeugt</h1>
+        <h1>{{ $auftrag->tickets->count() }} {{ $auftrag->tickets->count() === 1 ? 'Karte' : 'Karten' }} erzeugt</h1>
         <p class="hinweis">{{ $auftrag->vorstellung->veranstaltung->name }}, {{ $auftrag->vorstellung->anzeige() }} · {{ $auftrag->verkaufsstelle->name }}</p>
         @include('kern::teile.fehler')
         <a class="knopf knopf--gross" href="{{ route('tickets.selbstdruck.etiketten', $auftrag) }}" target="_blank" style="display:block;text-align:center">Etiketten jetzt drucken</a>
@@ -31,6 +31,8 @@
             @endforeach
             </tbody>
         </table>
-        <a class="knopf" href="{{ route('tickets.selbstdruck.create', ['vorstellung' => $auftrag->vorstellung_id]) }}" style="margin-top:1rem">Nächster Verkauf</a>
+        <div class="knopfzeile" style="margin-top:1rem">
+            <button type="button" class="knopf" onclick="window.close(); setTimeout(function () { location.href = '{{ route('tickets.selbstdruck.create', ['vorstellung' => $auftrag->vorstellung_id]) }}'; }, 300);">Fertig – Tab schließen</button>
+        </div>
     </section>
 @endsection
