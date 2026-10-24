@@ -47,6 +47,7 @@ class Abendkasse
 
         return DB::transaction(function () use ($vorstellung, $mengen, $zahlungsart, $durch, $kategorien) {
             $vorstellung = Vorstellung::whereKey($vorstellung->id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($vorstellung->id);
             if ($vorstellung->kontingent === null) {
                 throw new InvalidArgumentException('Für diese Vorstellung ist noch kein Kontingent festgelegt.');
             }
@@ -95,6 +96,7 @@ class Abendkasse
 
         return DB::transaction(function () use ($vorstellung, $ticket, $zahlungsart, $durch) {
             $ticket = Ticket::whereKey($ticket->id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($ticket->vorstellung_id);
             if ($fehler = $this->bestandPruefen($vorstellung, $ticket)) {
                 throw new InvalidArgumentException($fehler);
             }
@@ -118,6 +120,7 @@ class Abendkasse
     {
         return DB::transaction(function () use ($auftrag, $anzahl, $durch) {
             $auftrag = Kartenauftrag::whereKey($auftrag->id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($auftrag->vorstellung_id);
             if ($auftrag->art !== 'freikarten' || $auftrag->verkaufsstelle_id !== null || ! in_array($auftrag->status, ['bestaetigt', 'gedruckt'], true)) {
                 throw new InvalidArgumentException('Dieser Freikarten-Stapel ist nicht an der Abendkasse hinterlegt.');
             }

@@ -63,7 +63,7 @@ final class Rechtekatalog
     ];
 
     /** Stufen, deren Rechte bereits eine Funktion haben. */
-    private const AKTIVE_STUFEN = ['1a', '1b', '2', '3', '4a'];
+    private const AKTIVE_STUFEN = ['1a', '1b', '2', '3', '4a', '4b'];
 
     /** @return list<string> */
     public static function alle(): array

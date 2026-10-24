@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Kern\Dienste\Protokoll;
 use App\Modules\Kern\Models\Veranstaltung;
 use App\Modules\Kern\Models\Vorstellung;
+use App\Modules\Ticket\Dienste\Abschlusssperre;
 use App\Modules\Ticket\Dienste\Geld;
 use App\Modules\Ticket\Dienste\Kontingent;
 use App\Modules\Ticket\Models\Auftragsposition;
@@ -110,6 +111,9 @@ class VeranstaltungTicketsController extends Controller
     public function kontingentSpeichern(Request $request, Veranstaltung $veranstaltung, Vorstellung $vorstellung, Kontingent $kontingent): RedirectResponse
     {
         abort_if($vorstellung->veranstaltung_id !== $veranstaltung->id, 404);
+        if (Abschlusssperre::istAbgeschlossen($vorstellung->id)) {
+            return back()->withErrors(['kontingent' => Abschlusssperre::TEXT]);
+        }
         $daten = $request->validate(['kontingent' => ['required', 'integer', 'min:0', 'max:100000']], [], ['kontingent' => 'Kontingent']);
         $belegt = $kontingent->belegt($vorstellung);
 

@@ -64,7 +64,13 @@
                 <h3>{{ $v->anzeige() }}</h3>
                 <p>Belegt: <strong>{{ $z['belegt'] }}</strong>@if ($z['freikarten']) (davon {{ $z['freikarten'] }} Freikarten)@endif ·
                    Frei: <strong>{{ $z['frei'] ?? '–' }}</strong> ·
-                   Angefordert, noch nicht bestätigt: <strong>{{ $z['angefordert'] }}</strong></p>
+                   Angefordert, noch nicht bestätigt: <strong>{{ $z['angefordert'] }}</strong>
+                   @if (\App\Modules\Ticket\Dienste\Abschlusssperre::istAbgeschlossen($v->id)) · <span class="marke">abgeschlossen</span>@endif</p>
+                <p class="knopfzeile">
+                    @can('tickets.auswerten')<a class="knopf knopf--zweit" href="{{ route('tickets.auswertung', $v) }}">Auswertung</a>@endcan
+                    @can('ticket.abschluss')<a class="knopf knopf--zweit" href="{{ route('tickets.abschluss', $v) }}">Abschluss</a>@endcan
+                    @can('tickets.notfallliste')<a class="knopf knopf--zweit" href="{{ route('tickets.notfallliste', $v) }}" target="_blank">Notfallliste</a>@endcan
+                </p>
                 @can('ticket.kontingente')
                     <form method="post" action="{{ route('tickets.kontingent', [$veranstaltung, $v]) }}" class="formular formular--zeile">
                         @csrf @method('put')

@@ -38,6 +38,16 @@
         @endcan
     </div>
 
+    @if ($abschlussOffen->isNotEmpty())
+        <section class="karte" style="margin-top:1rem">
+            <h2>Abschluss offen</h2>
+            @foreach ($abschlussOffen as $v)
+                <p><a href="{{ route(auth()->user()->can('ticket.abschluss') ? 'tickets.abschluss' : 'tickets.auswertung', $v) }}">{{ $v->veranstaltung->name }}, {{ $v->anzeige() }}</a>
+                    <span class="hinweis">– vor {{ (int) $v->beginn_um->startOfDay()->diffInDays(today()) }} Tagen</span></p>
+            @endforeach
+        </section>
+    @endif
+
     @if ($veranstaltungen->isNotEmpty())
         <section class="karte" style="margin-top:1rem">
             <h2>Veranstaltungen</h2>

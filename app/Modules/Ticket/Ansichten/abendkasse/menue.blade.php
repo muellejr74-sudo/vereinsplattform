@@ -36,4 +36,5 @@
             <span>{{ now()->lt($nichtAbgeholtAb) ? 'ab '.$nichtAbgeholtAb->format('H:i').' Uhr' : $offen.' noch offen' }}</span>
         </a>
     </nav>
+    <p class="hinweis" style="margin-top:1rem"><a href="{{ route('tickets.notfallliste', $v) }}" target="_blank">Notfallliste (PDF)</a> – für den Fall eines Internetausfalls vorab ausdrucken.@can('tickets.nachbuchen') · <a href="{{ route('tickets.nachbuchen', $v) }}">Nachbuchen</a>@endcan</p>
 @endsection

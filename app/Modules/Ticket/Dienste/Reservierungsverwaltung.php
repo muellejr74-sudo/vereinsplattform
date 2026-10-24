@@ -58,6 +58,7 @@ class Reservierungsverwaltung
 
         return DB::transaction(function () use ($vorstellung, $stelle, $art, $mengen, $daten, $durch, $kategorien, $frist) {
             $vorstellung = Vorstellung::whereKey($vorstellung->id)->lockForUpdate()->firstOrFail();
+            Abschlusssperre::pruefen($vorstellung->id);
             if ($vorstellung->kontingent === null) {
                 throw new InvalidArgumentException('Für diese Vorstellung ist noch kein Kontingent festgelegt.');
             }
@@ -271,13 +272,17 @@ class Reservierungsverwaltung
         ], $verkauf), true);
 
         $reservierung->forceFill(['kartenauftrag_id' => $auftrag->id])->save();
+        app(Druckstellenmeldung::class)->melden($auftrag);
 
         return $auftrag;
     }
 
     private function sperren(Reservierung $reservierung): Reservierung
     {
-        return Reservierung::whereKey($reservierung->id)->lockForUpdate()->firstOrFail();
+        $gesperrt = Reservierung::whereKey($reservierung->id)->lockForUpdate()->firstOrFail();
+        Abschlusssperre::pruefen($gesperrt->vorstellung_id);
+
+        return $gesperrt;
     }
 
     private function leer(?string $wert): ?string
