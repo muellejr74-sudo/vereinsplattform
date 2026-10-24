@@ -23,6 +23,7 @@ Freigegeben am 24.10.2026 (P-5.4). Fachliche Grundlage: E1, E4b, E40–E46a, E11
 | T4a-16 | **Plus-/Minus-Knöpfe** an allen Mengenfeldern (Abendkasse, Abholung, Reservierung, Bestellung, Freikarten) – kleines Skript `public/js/mengen.js`; ohne JavaScript bleibt das normale Zahlenfeld. | Wunsch bei der Abnahme: am Handy schneller. |
 | T4a-17 | **Sofort-Prüfung gegen die freien Plätze** (Abendkasse, Reservierung, Bestätigen der Druckstelle): Übersteigt die gewählte Menge die freien Plätze, erscheint sofort ein roter Hinweis, Plus und Absenden sind gesperrt. Der Server prüft beim Absenden weiterhin unter Sperre. | Wunsch bei der Abnahme: Überbuchung sofort sehen. |
 | T4a-18 | **Kompakter Kopf der Abendkasse:** „Abendkasse“ groß mit Wechsel-Symbol rechts, darunter nur Datum und Uhrzeit (Veranstaltungsname als Hinweis beim Antippen/Überfahren), „Frei“ groß mit belegt/eingelassen klein in einer Zeile. | Wunsch bei der Abnahme: Knöpfe rücken nach oben. |
+| T4a-19 | **Abendkasse nur im Zeitfenster** der Vorstellung (E100: 3 Stunden vor Einlass bis 3 Stunden nach Ende bzw. 4:00 Uhr) – wie die Stationen. Außerhalb: Hinweis „öffnet am … um …“, alle Kassenvorgänge gesperrt. | Wunsch bei der Abnahme: kein Verkauf für eine Abendkasse in 3 Tagen. |
 | T4a-14 | Rechte: „Abendkasse“ und „Stornieren“ aktiv; **neues sensibles Recht „Zahlungseingang vermerken“** (E125). „Auswertungen“ und „Abschluss“ folgen mit Stufe 4b. | |
 
 ## Ehrlicher Hinweis zu den Tests

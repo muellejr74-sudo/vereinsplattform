@@ -58,6 +58,23 @@ class AbendTest extends TicketTestCase
         $this->als($this->kasse)->get('/tickets/abendkasse')->assertOk()->assertSee('Der Hauptmann von Köpenick');
     }
 
+    public function test_abendkasse_nur_im_zeitfenster_der_vorstellung(): void
+    {
+        // 20.11., Vorstellung am 01.12. (Einlass 18:30): noch geschlossen.
+        $this->als($this->kasse)->get('/tickets/abendkasse')->assertOk()->assertSee('Gerade ist keine Abendkasse geöffnet')->assertSee('öffnet 01.12. um 15:30 Uhr');
+        $basis = '/tickets/abendkasse/'.$this->vorstellung->id;
+        $this->get($basis)->assertRedirect('/tickets/abendkasse');
+        $this->get($basis)->assertSessionHasErrors('kasse');
+        $this->post($basis.'/verkauf', ['mengen' => [$this->erwachsene->id => 1], 'zahlungsart' => 'bar'])->assertRedirect('/tickets/abendkasse');
+        $this->assertCount(0, $this->tickets());
+
+        $this->travelTo(Carbon::parse('2026-12-01 15:30'));
+        $this->get($basis)->assertOk()->assertSee('Karten direkt verkaufen');
+
+        $this->travelTo(Carbon::parse('2026-12-02 04:00')); // ohne Endzeit: Fenster endet um 4:00 Uhr
+        $this->get($basis)->assertRedirect('/tickets/abendkasse');
+    }
+
     public function test_spontanverkauf_ohne_etikett_gilt_als_eingelassen(): void
     {
         $this->amAbend();

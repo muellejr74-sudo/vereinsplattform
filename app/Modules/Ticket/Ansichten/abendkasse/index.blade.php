@@ -5,18 +5,25 @@
 @section('inhalt')
     <section class="karte karte--schmal">
         <h1>Abendkasse</h1>
-        @if ($vorstellungen->isEmpty())
-            <p>Keine kommenden Vorstellungen.</p>
+        @include('kern::teile.fehler')
+        @if ($offen->isEmpty())
+            <p>Gerade ist keine Abendkasse geöffnet.</p>
         @else
             <p>Für welche Vorstellung?</p>
-            <div class="stationswahl">
-                @foreach ($vorstellungen as $v)
-                    <a class="station-knopf" href="{{ route('tickets.abendkasse.show', $v) }}">
-                        <strong>{{ $v->veranstaltung->name }}</strong><span>{{ $v->anzeige() }}</span>
-                        @if ($v->istImZeitfenster())<span class="status status--fertig">läuft</span>@endif
+            <div class="menue-knoepfe">
+                @foreach ($offen as $v)
+                    <a class="menue-knopf" href="{{ route('tickets.abendkasse.show', $v) }}">
+                        <strong>{{ $v->anzeige() }}</strong><span>{{ $v->veranstaltung->name }}</span>
                     </a>
                 @endforeach
             </div>
         @endif
+        @if ($kommend->isNotEmpty())
+            <h2 style="margin-top:1.25rem">Demnächst</h2>
+            @foreach ($kommend as $v)
+                <p class="hinweis">{{ $v->veranstaltung->name }}, {{ $v->anzeige() }} – öffnet {{ $v->fensterBeginn()->format('d.m.') }} um {{ $v->fensterBeginn()->format('H:i') }} Uhr</p>
+            @endforeach
+        @endif
+        <p class="hinweis" style="margin-top:1rem">Die Abendkasse öffnet 3 Stunden vor Einlass und schließt 3 Stunden nach dem Ende der Vorstellung.</p>
     </section>
 @endsection

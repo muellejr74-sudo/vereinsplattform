@@ -79,6 +79,8 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
     // Abendkasse (E32, E41–E46a, E114)
     Route::middleware('can:ticket.abendkasse')->prefix('abendkasse')->name('abendkasse.')->group(function () {
         Route::get('/', [AbendkasseController::class, 'index'])->name('index');
+    });
+    Route::middleware(['can:ticket.abendkasse', 'abendkasse.offen'])->prefix('abendkasse')->name('abendkasse.')->group(function () {
         Route::get('{vorstellung}', [AbendkasseController::class, 'show'])->whereNumber('vorstellung')->name('show');
         Route::get('{vorstellung}/verkauf', [AbendkasseController::class, 'verkaufFormular'])->whereNumber('vorstellung')->name('verkauf');
         Route::post('{vorstellung}/verkauf', [AbendkasseController::class, 'verkauf'])->whereNumber('vorstellung');

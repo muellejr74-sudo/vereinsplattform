@@ -26,14 +26,18 @@ class AbendkasseController extends Controller
 
     public function index(): View|RedirectResponse
     {
+        // Geöffnet ist nur, was gerade im Zeitfenster liegt (E100); kommende werden mit Öffnungszeit gezeigt.
         $vorstellungen = Vorstellung::with('veranstaltung')->where('beginn_um', '>=', now()->subDay())->orderBy('beginn_um')->get()
             ->reject(fn ($v) => $v->istVorbei())->values();
-        $laufend = $vorstellungen->filter(fn ($v) => $v->istImZeitfenster());
-        if ($laufend->count() === 1) {
-            return redirect()->route('tickets.abendkasse.show', $laufend->first());
+        $offen = $vorstellungen->filter(fn ($v) => $v->istImZeitfenster())->values();
+        if ($offen->count() === 1 && ! session()->has('errors')) {
+            return redirect()->route('tickets.abendkasse.show', $offen->first());
         }
 
-        return view('ticket::abendkasse.index', ['vorstellungen' => $vorstellungen->take(20)]);
+        return view('ticket::abendkasse.index', [
+            'offen' => $offen,
+            'kommend' => $vorstellungen->reject(fn ($v) => $v->istImZeitfenster())->take(5)->values(),
+        ]);
     }
 
     /** Startmenü der Abendkasse: große Knöpfe, je Aufgabe eine eigene Seite (Wunsch des Betreibers bei der Abnahme). */
