@@ -32,7 +32,7 @@
             </tbody>
         </table>
         <div class="knopfzeile" style="margin-top:1rem">
-            <button type="button" class="knopf" onclick="window.close(); setTimeout(function () { location.href = '{{ route('tickets.selbstdruck.create', ['vorstellung' => $auftrag->vorstellung_id]) }}'; }, 300);">Fertig – Tab schließen</button>
+            <button type="button" class="knopf" onclick="window.close(); setTimeout(function () { location.href = '{{ route('tickets.selbstdruck.create', ['vorstellung' => $auftrag->vorstellung_id]) }}'; }, 300);">Gedruckt – Tab schließen</button>
         </div>
     </section>
 @endsection

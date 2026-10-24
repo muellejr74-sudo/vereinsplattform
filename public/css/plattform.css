@@ -340,3 +340,5 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .scan-vollbild__weiter { font: inherit; font-size: 1.3rem; font-weight: 700; padding: 1.1rem; border-radius: var(--radius); border: 3px solid currentColor; background: rgba(255, 255, 255, 0.92); color: #1b1b18; cursor: pointer; }
 .scan-vollbild.scan-ergebnis--gelb { color: #1b1b18; }
 .kasse-zahlen--einfach span + span::before { content: none; }
+.kasse-betrag { font-size: 1.2rem; margin: 0.75rem 0; }
+.kasse-betrag strong { font-size: 2.2rem; margin-left: 0.4rem; }

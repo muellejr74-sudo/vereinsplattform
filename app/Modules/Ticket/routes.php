@@ -65,6 +65,7 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
     // Verkaufsstelle druckt selbst (E128)
     Route::get('verkaufen', [SelbstdruckController::class, 'create'])->name('selbstdruck.create');
     Route::post('verkaufen', [SelbstdruckController::class, 'store'])->name('selbstdruck.store');
+    Route::get('verkaufen/kassieren', [SelbstdruckController::class, 'kassieren'])->name('selbstdruck.kassieren');
     Route::get('verkaufen/{auftrag}', [SelbstdruckController::class, 'show'])->whereNumber('auftrag')->name('selbstdruck.show');
     Route::get('verkaufen/{auftrag}/etiketten.pdf', [SelbstdruckController::class, 'etiketten'])->whereNumber('auftrag')->name('selbstdruck.etiketten');
     Route::post('verkaufen/karten/{ticket}/nachdruck', [SelbstdruckController::class, 'nachdruck'])->whereNumber('ticket')->name('selbstdruck.nachdruck');

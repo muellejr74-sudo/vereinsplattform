@@ -32,11 +32,17 @@ class SelbstdruckController extends Controller
         $vorstellungen = Vorstellung::with('veranstaltung')->where('beginn_um', '>=', now()->startOfDay())->orderBy('beginn_um')->get()
             ->reject(fn ($v) => $v->istVorbei())->values();
 
+        $kategorien = Ticketkategorie::whereIn('veranstaltung_id', $vorstellungen->pluck('veranstaltung_id')->unique())
+            ->where('ist_freikarte', false)->orderBy('reihenfolge')->get()->groupBy('veranstaltung_id');
+
         return view('ticket::selbstdruck.formular', [
             'stellen' => $stellen,
             'vorstellungen' => $vorstellungen,
-            'kategorien' => Ticketkategorie::whereIn('veranstaltung_id', $vorstellungen->pluck('veranstaltung_id')->unique())
-                ->where('ist_freikarte', false)->orderBy('reihenfolge')->get()->groupBy('veranstaltung_id'),
+            'kategorien' => $kategorien,
+            // Preise je Vorstellung (inkl. Abweichungen) für die Summe beim Eintippen
+            'preise' => $vorstellungen->mapWithKeys(fn ($v) => [$v->id => $kategorien->get($v->veranstaltung_id, collect())
+                ->mapWithKeys(fn ($k) => [$k->id => $k->preisFuer($v->id)])->all()])->all(),
+            'letzte' => (int) Kartenauftrag::max('id'),
             'frei' => $vorstellungen->mapWithKeys(fn ($v) => [$v->id => $kontingent->frei($v)])->all(),
             'vorauswahl' => (int) $request->query('vorstellung'),
         ]);
@@ -61,6 +67,26 @@ class SelbstdruckController extends Controller
         }
 
         return redirect()->route('tickets.selbstdruck.show', $auftrag);
+    }
+
+    /**
+     * Kassieren im ersten Tab (Wunsch des Betreibers): zeigt den Betrag des gerade erzeugten Verkaufs
+     * dieser Person (neuer als „nach“). Rückgeld wird nur auf dem Bildschirm berechnet, nicht gespeichert.
+     */
+    public function kassieren(Request $request): View|RedirectResponse
+    {
+        $nach = (int) $request->query('nach');
+        $auftrag = Kartenauftrag::with(['tickets', 'vorstellung.veranstaltung'])->where('id', '>', $nach)
+            ->where('angefordert_von', $request->user()->id)
+            ->whereIn('verkaufsstelle_id', $this->zugriff->selbstdruckStellen($request->user())->pluck('id'))
+            ->orderByDesc('id')->first();
+
+        return view('ticket::selbstdruck.kassieren', [
+            'auftrag' => $auftrag,
+            'versuch' => (int) $request->query('versuch', 0),
+            'nach' => $nach,
+            'vorstellung' => (int) $request->query('vorstellung'),
+        ]);
     }
 
     public function show(Request $request, Kartenauftrag $auftrag): View

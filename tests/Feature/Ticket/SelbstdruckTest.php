@@ -27,7 +27,8 @@ class SelbstdruckTest extends TicketTestCase
     {
         $this->selbstdruckEinschalten();
         $this->als($this->verkaeufer)->get('/tickets')->assertSee('Karten verkaufen und drucken');
-        $this->get('/tickets/verkaufen')->assertOk()->assertSee('data-frei="50"', false);
+        $this->get('/tickets/verkaufen')->assertOk()->assertSee('data-frei="50"', false)
+            ->assertSee('data-preise=\'{"'.$this->erwachsene->id.'":1200,"'.$this->kinder->id.'":600}\'', false);
 
         $this->post('/tickets/verkaufen', ['verkaufsstelle_id' => $this->baeckerei->id, 'vorstellung_id' => $this->vorstellung->id,
             'mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1]])->assertSessionHasNoErrors();
@@ -42,6 +43,11 @@ class SelbstdruckTest extends TicketTestCase
         $pdf = $this->get('/tickets/verkaufen/'.$auftrag->id.'/etiketten.pdf');
         $pdf->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->assertSame(3, substr_count($pdf->getContent(), '/Type /Page') - substr_count($pdf->getContent(), '/Type /Pages'));
+
+        // Kassieren im ersten Tab: Betrag des eben erzeugten Verkaufs.
+        $this->get('/tickets/verkaufen/kassieren?nach='.($auftrag->id - 1).'&vorstellung='.$this->vorstellung->id)->assertOk()
+            ->assertSee('Kassieren')->assertSee('30,00 €')->assertSee('data-betrag="3000"', false);
+        $this->get('/tickets/verkaufen/kassieren?nach='.$auftrag->id.'&versuch=8')->assertSee('Kein neuer Verkauf');
 
         $this->post('/tickets/verkaufen/karten/'.$tickets[0]->id.'/nachdruck')->assertOk();
         $this->assertSame(2, $tickets[0]->fresh()->druckanzahl);
@@ -70,6 +76,7 @@ class SelbstdruckTest extends TicketTestCase
 
         $this->als($anderer)->get('/tickets/verkaufen/'.$auftrag->id)->assertNotFound();
         $this->get('/tickets/verkaufen/'.$auftrag->id.'/etiketten.pdf')->assertNotFound();
+        $this->get('/tickets/verkaufen/kassieren?nach=0&versuch=8')->assertSee('Kein neuer Verkauf'); // fremder Verkauf erscheint nicht
         $this->post('/tickets/verkaufen/karten/'.$karte->id.'/nachdruck')->assertNotFound();
         $this->post('/tickets/verkaufen', ['verkaufsstelle_id' => $this->baeckerei->id, 'vorstellung_id' => $this->vorstellung->id,
             'mengen' => [$this->erwachsene->id => 1]])->assertForbidden();
