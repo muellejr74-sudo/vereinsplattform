@@ -37,6 +37,7 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
     // Kategorien, Preise, Kontingente (E38, E39)
     Route::get('veranstaltungen/{veranstaltung}', [VeranstaltungTicketsController::class, 'show'])->whereNumber('veranstaltung')->name('veranstaltung');
     Route::middleware('can:ticket.kategorien')->group(function () {
+        Route::post('veranstaltungen/{veranstaltung}/kategorien/reihenfolge', [VeranstaltungTicketsController::class, 'kategorienReihenfolge'])->whereNumber('veranstaltung')->name('kategorien.reihenfolge');
         Route::post('veranstaltungen/{veranstaltung}/kategorien', [VeranstaltungTicketsController::class, 'kategorieSpeichern'])->whereNumber('veranstaltung')->name('kategorien.neu');
         Route::put('veranstaltungen/{veranstaltung}/kategorien/{kategorie}', [VeranstaltungTicketsController::class, 'kategorieSpeichern'])->whereNumber(['veranstaltung', 'kategorie'])->name('kategorien.speichern');
         Route::delete('veranstaltungen/{veranstaltung}/kategorien/{kategorie}', [VeranstaltungTicketsController::class, 'kategorieLoeschen'])->whereNumber(['veranstaltung', 'kategorie'])->name('kategorien.loeschen');

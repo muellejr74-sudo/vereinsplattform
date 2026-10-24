@@ -13,6 +13,7 @@ use App\Modules\Ticket\Models\Auftragsposition;
 use App\Modules\Ticket\Models\Preisabweichung;
 use App\Modules\Ticket\Models\Ticket;
 use App\Modules\Ticket\Models\Ticketkategorie;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +38,19 @@ class VeranstaltungTicketsController extends Controller
         ]);
     }
 
+    /** Reihenfolge per Ziehen oder Pfeilen (Wunsch des Betreibers): Liste der Kategorie-Kennungen in neuer Folge. */
+    public function kategorienReihenfolge(Request $request, Veranstaltung $veranstaltung): JsonResponse
+    {
+        $ids = array_map('intval', (array) $request->validate(['ids' => ['required', 'array', 'max:200'], 'ids.*' => ['integer']])['ids']);
+        $kategorien = Ticketkategorie::where('veranstaltung_id', $veranstaltung->id)->where('ist_freikarte', false)->whereIn('id', $ids)->get()->keyBy('id');
+        abort_if($kategorien->count() !== count(array_unique($ids)), 422);
+        foreach (array_values(array_unique($ids)) as $i => $id) {
+            $kategorien[$id]->update(['reihenfolge' => ($i + 1) * 10]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
     public function kategorieSpeichern(Request $request, Veranstaltung $veranstaltung, ?Ticketkategorie $kategorie = null): RedirectResponse
     {
         abort_if($kategorie && ($kategorie->veranstaltung_id !== $veranstaltung->id || $kategorie->ist_freikarte), 404);
@@ -54,8 +68,13 @@ class VeranstaltungTicketsController extends Controller
             return back()->withInput()->withErrors(['name' => 'Die Kategorie „Freikarte“ gibt es bereits automatisch.']);
         }
 
-        $werte = ['veranstaltung_id' => $veranstaltung->id, 'name' => trim($daten['name']), 'preis_cent' => $preis,
-            'reihenfolge' => $daten['reihenfolge'] ?? ((int) Ticketkategorie::where('veranstaltung_id', $veranstaltung->id)->where('ist_freikarte', false)->max('reihenfolge') + 10)];
+        $werte = ['veranstaltung_id' => $veranstaltung->id, 'name' => trim($daten['name']), 'preis_cent' => $preis];
+        if (isset($daten['reihenfolge'])) {
+            $werte['reihenfolge'] = $daten['reihenfolge'];
+        } elseif (! $kategorie) {
+            // neue Kategorie ans Ende; beim Bearbeiten bleibt die Reihenfolge (Verschieben per Ziehen/Pfeilen)
+            $werte['reihenfolge'] = (int) Ticketkategorie::where('veranstaltung_id', $veranstaltung->id)->where('ist_freikarte', false)->max('reihenfolge') + 10;
+        }
 
         if ($kategorie) {
             $vorher = $kategorie->preis_cent;

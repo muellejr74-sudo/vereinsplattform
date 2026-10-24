@@ -342,3 +342,21 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .kasse-zahlen--einfach span + span::before { content: none; }
 .kasse-betrag { font-size: 1.2rem; margin: 0.75rem 0; }
 .kasse-betrag strong { font-size: 2.2rem; margin-left: 0.4rem; }
+
+/* Sortierbare Listen (Stationen, Kategorien): Ziehen am Griff oder ▲ ▼ */
+.sortier-liste { list-style: none; margin: 0; padding: 0; border: 1px solid var(--farbe-rand); border-radius: var(--radius); background: #fff; }
+.sortier-liste > li { border-bottom: 1px solid var(--farbe-rand); }
+.sortier-liste > li:last-child { border-bottom: 0; }
+.sortier-liste summary { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.6rem; cursor: pointer; list-style: none; }
+.sortier-liste summary::-webkit-details-marker { display: none; }
+.sortier-liste .griff { cursor: grab; font-size: 1.3rem; color: #888; padding: 0.25rem 0.35rem; touch-action: none; user-select: none; }
+.sortier-name { flex: 1; min-width: 0; font-weight: 600; }
+.sortier-name .marke { margin-left: 0.35rem; font-weight: 400; }
+.sortier-knoepfe { display: inline-flex; gap: 0.25rem; flex: 0 0 auto; }
+.sortier-knoepfe button { width: 2.4rem; height: 2.4rem; border: 1px solid var(--farbe-rand); border-radius: var(--radius); background: #fff; color: var(--farbe-primaer); font-size: 1rem; cursor: pointer; }
+.sortier-knoepfe button:disabled { opacity: 0.3; cursor: default; }
+.sortier-bearbeiten-knopf { color: var(--farbe-primaer); font-size: 0.9rem; white-space: nowrap; }
+.sortier-liste details[open] > summary { background: var(--farbe-sekundaer); }
+.sortier-liste details > .formular { padding: 0.5rem 0.75rem 0.9rem; }
+.sortier-liste .sortable-ghost { opacity: 0.4; }
+.sortier-status { min-height: 1.2rem; margin: 0.35rem 0 0; }
