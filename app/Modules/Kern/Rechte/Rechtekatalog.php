@@ -61,8 +61,8 @@ final class Rechtekatalog
         'verein.impressum' => ['Vereinsimpressum pflegen', 'Gästeportal/Werbung', null, '1b', true],
     ];
 
-    /** Rechte, die in Stufe 1b bereits eine Funktion haben. */
-    private const AKTIVE_STUFEN = ['1a', '1b'];
+    /** Stufen, deren Rechte bereits eine Funktion haben. */
+    private const AKTIVE_STUFEN = ['1a', '1b', '2'];
 
     /** @return list<string> */
     public static function alle(): array
@@ -114,5 +114,8 @@ final class Rechtekatalog
     }
 
     /** Rechte, die die Vereinsverwaltung öffnen. */
-    public const VERWALTUNG = ['benutzer.verwalten', 'rechte.vergeben', 'protokoll.ansehen', 'verein.impressum'];
+    public const VERWALTUNG = [
+        'benutzer.verwalten', 'rechte.vergeben', 'protokoll.ansehen', 'verein.impressum',
+        'orte.verwalten', 'veranstaltungen.verwalten', 'stationen.verwalten', 'qrcodes.verwalten', 'saal.codes',
+    ];
 }

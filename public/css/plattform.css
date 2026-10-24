@@ -149,8 +149,8 @@ a { color: var(--farbe-primaer); }
 .formular { display: flex; flex-direction: column; gap: 0.35rem; }
 .formular label { font-weight: 600; margin-top: 0.6rem; }
 .formular .knopf { margin-top: var(--abstand); align-self: flex-start; }
-.formular input[type="text"], .formular input[type="email"], .formular input[type="password"],
-.formular input[type="search"], .formular select, .formular textarea {
+.formular input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+.formular select, .formular textarea {
     width: 100%;
     min-height: 2.75rem;
     padding: 0.5rem 0.75rem;
@@ -256,6 +256,22 @@ a { color: var(--farbe-primaer); }
 
 .farbwahl { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .formular .farbwahl input[type="color"] { width: 3.5rem; height: 2.75rem; padding: 0.15rem; border: 1px solid var(--farbe-rand); border-radius: var(--radius); background: #fff; }
-.formular .farbwahl input[type="text"] { max-width: 9rem; font-family: ui-monospace, monospace; }
+.formular .farbwahl input[type="text"] { max-width: 9rem; width: auto; font-family: ui-monospace, monospace; }
 .logo-vorschau { max-height: 5rem; max-width: 14rem; border: 1px solid var(--farbe-rand); border-radius: var(--radius); padding: 0.25rem; background: #fff; }
 .meldung--hinweis { background: #fff4e5; border-color: var(--status-offen); }
+
+/* ------------------------------------------------------------------
+ * Stufe 2: Einsatz, Stationen, Scan
+ * ------------------------------------------------------------------ */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.einsatzcode { font-size: 2.5rem; font-weight: 700; letter-spacing: 0.3rem; font-family: ui-monospace, monospace; margin: 0.25rem 0; }
+.qr--klein svg { width: 160px; height: 160px; }
+.stationswahl { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+.station-knopf {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem;
+    min-height: 5rem; padding: 0.75rem; border: 2px solid var(--farbe-primaer); border-radius: var(--radius);
+    background: #fff; color: var(--farbe-text); font: inherit; cursor: pointer;
+}
+.station-knopf strong { font-size: 1.1rem; color: var(--farbe-primaer); }
+.station-knopf:disabled { opacity: 0.55; cursor: not-allowed; border-color: var(--farbe-rand); }
+.tischnummer { font-size: 1.5rem; font-weight: 700; }

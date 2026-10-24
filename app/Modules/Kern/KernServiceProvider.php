@@ -54,6 +54,9 @@ class KernServiceProvider extends ServiceProvider
             return null;
         });
         Gate::define('verein.verwalten', fn (User $benutzer) => app(Berechtigung::class)->darfVereinVerwalten($benutzer));
+        // Einsatz-Code, Namen des Abends, Geräte abmelden: mit „Stationen verwalten“ ODER dem Saal-Recht
+        // „Saal-Code/Einsatz-Code erzeugen“ (E73) – so geht es auch bei Vereinen ohne Saalmodul (Einlass).
+        Gate::define('einsatz.verwalten', fn (User $benutzer) => $benutzer->can('stationen.verwalten') || $benutzer->can('saal.codes'));
 
         if ($this->app->runningInConsole()) {
             $this->commands([

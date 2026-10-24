@@ -1,14 +1,21 @@
 <?php
 
 use App\Modules\Kern\Http\Controllers\AnmeldungController;
+use App\Modules\Kern\Http\Controllers\EinsatzController;
 use App\Modules\Kern\Http\Controllers\KontoController;
 use App\Modules\Kern\Http\Controllers\LogoController;
 use App\Modules\Kern\Http\Controllers\PasswortController;
 use App\Modules\Kern\Http\Controllers\RechtstexteController;
+use App\Modules\Kern\Http\Controllers\ScanController;
 use App\Modules\Kern\Http\Controllers\StartseiteController;
+use App\Modules\Kern\Http\Controllers\Verein\OrteController;
 use App\Modules\Kern\Http\Controllers\Verein\PersonenController;
+use App\Modules\Kern\Http\Controllers\Verein\StationenController;
+use App\Modules\Kern\Http\Controllers\Verein\TischeController;
+use App\Modules\Kern\Http\Controllers\Verein\VeranstaltungenController;
 use App\Modules\Kern\Http\Controllers\Verein\VereinController;
 use App\Modules\Kern\Http\Controllers\Verwaltung\BenutzerController;
+use App\Modules\Kern\Http\Controllers\Verwaltung\BetreiberTischeController;
 use App\Modules\Kern\Http\Controllers\Verwaltung\ProtokollController;
 use App\Modules\Kern\Http\Controllers\Verwaltung\RechtstexteController as RechtstexteVerwaltung;
 use App\Modules\Kern\Http\Controllers\Verwaltung\VereineController;
@@ -26,6 +33,17 @@ Route::get('/datenschutz', [RechtstexteController::class, 'datenschutz'])->name(
 Route::get('/verein/{kuerzel}/impressum', [RechtstexteController::class, 'vereinsimpressum'])->where('kuerzel', '[A-Za-z0-9]{2,6}')->name('verein.impressum');
 Route::get('/verein/{kuerzel}/datenschutz', [RechtstexteController::class, 'vereinsdatenschutz'])->where('kuerzel', '[A-Za-z0-9]{2,6}')->name('verein.datenschutz');
 Route::get('/verein/{kuerzel}/logo', [LogoController::class, 'anzeigen'])->where('kuerzel', '[A-Za-z0-9]{2,6}')->name('verein.logo');
+
+// Scan-Weiche für Tisch-QR-Codes (E53, E106, E109)
+Route::get('/t/{code}', ScanController::class)->where('code', '[A-Za-z0-9]{6,16}')->middleware('throttle:60,1')->name('scan');
+
+// Abendpersonal ohne Konto: Einsatz-Code → Station (E29, E29a)
+Route::get('/einsatz', [EinsatzController::class, 'codeFormular'])->name('einsatz');
+Route::post('/einsatz', [EinsatzController::class, 'codePruefen'])->middleware('throttle:20,1');
+Route::get('/einsatz/station', [EinsatzController::class, 'stationFormular'])->name('einsatz.station');
+Route::post('/einsatz/station', [EinsatzController::class, 'stationWaehlen']);
+Route::get('/station', [EinsatzController::class, 'station'])->name('station');
+Route::post('/station/abmelden', [EinsatzController::class, 'abmelden'])->name('station.abmelden');
 
 // Nur für nicht angemeldete Besucher
 Route::middleware('guest')->group(function () {
@@ -71,10 +89,60 @@ Route::middleware('auth')->group(function () {
             });
             Route::get('personen/{person}', [PersonenController::class, 'rechte'])->whereNumber('person')->middleware('can:verein.verwalten')->name('personen.rechte');
             Route::put('personen/{person}/rechte', [PersonenController::class, 'rechteSpeichern'])->whereNumber('person')->middleware('can:rechte.vergeben')->name('personen.rechte.speichern');
+            Route::post('personen/{person}/vorstellungsrechte', [PersonenController::class, 'vorstellungsrechtVergeben'])->whereNumber('person')->middleware('can:rechte.vergeben')->name('personen.vorstellungsrechte');
+            Route::delete('personen/{person}/vorstellungsrechte/{vergabe}', [PersonenController::class, 'vorstellungsrechtEntziehen'])->whereNumber(['person', 'vergabe'])->middleware('can:rechte.vergeben')->name('personen.vorstellungsrechte.entziehen');
 
             Route::get('rechtstexte', [VereinController::class, 'rechtstexte'])->middleware('can:verein.impressum')->name('rechtstexte');
             Route::put('rechtstexte', [VereinController::class, 'rechtstexteSpeichern'])->middleware('can:verein.impressum');
             Route::get('protokoll', [VereinController::class, 'protokoll'])->middleware('can:protokoll.ansehen')->name('protokoll');
+
+            // Stufe 2: Orte und Säle
+            Route::middleware('can:orte.verwalten')->group(function () {
+                Route::get('orte', [OrteController::class, 'index'])->name('orte');
+                Route::post('orte', [OrteController::class, 'ortSpeichern'])->name('orte.neu');
+                Route::put('orte/{ort}', [OrteController::class, 'ortSpeichern'])->whereNumber('ort')->name('orte.speichern');
+                Route::post('saele', [OrteController::class, 'saalSpeichern'])->name('saele.neu');
+                Route::put('saele/{saal}', [OrteController::class, 'saalSpeichern'])->whereNumber('saal')->name('saele.speichern');
+                Route::delete('saele/{saal}', [OrteController::class, 'saalLoeschen'])->whereNumber('saal')->name('saele.loeschen');
+            });
+
+            // Stufe 2: Veranstaltungen und Vorstellungen
+            Route::middleware('can:veranstaltungen.verwalten')->group(function () {
+                Route::resource('veranstaltungen', VeranstaltungenController::class)->parameters(['veranstaltungen' => 'veranstaltung'])->whereNumber('veranstaltung');
+                Route::get('veranstaltungen/{veranstaltung}/vorstellungen/neu', [VeranstaltungenController::class, 'vorstellungFormular'])->whereNumber('veranstaltung')->name('vorstellungen.create');
+                Route::post('veranstaltungen/{veranstaltung}/vorstellungen', [VeranstaltungenController::class, 'vorstellungSpeichern'])->whereNumber('veranstaltung')->name('vorstellungen.store');
+                Route::get('veranstaltungen/{veranstaltung}/vorstellungen/{vorstellung}', [VeranstaltungenController::class, 'vorstellungFormular'])->whereNumber(['veranstaltung', 'vorstellung'])->name('vorstellungen.edit');
+                Route::put('veranstaltungen/{veranstaltung}/vorstellungen/{vorstellung}', [VeranstaltungenController::class, 'vorstellungSpeichern'])->whereNumber(['veranstaltung', 'vorstellung'])->name('vorstellungen.update');
+                Route::delete('veranstaltungen/{veranstaltung}/vorstellungen/{vorstellung}', [VeranstaltungenController::class, 'vorstellungLoeschen'])->whereNumber(['veranstaltung', 'vorstellung'])->name('vorstellungen.destroy');
+            });
+
+            // Stufe 2: Stationen und Einsatz (Einsatz-Code auch mit dem Saal-Recht „Saal-Code/Einsatz-Code erzeugen“)
+            Route::middleware('can:stationen.verwalten')->group(function () {
+                Route::get('stationen', [StationenController::class, 'index'])->name('stationen');
+                Route::post('stationen', [StationenController::class, 'speichern'])->name('stationen.neu');
+                Route::put('stationen/{station}', [StationenController::class, 'speichern'])->whereNumber('station')->name('stationen.speichern');
+                Route::delete('stationen/{station}', [StationenController::class, 'loeschen'])->whereNumber('station')->name('stationen.loeschen');
+            });
+            Route::middleware('can:einsatz.verwalten')->group(function () {
+                Route::get('vorstellungen/{vorstellung}/einsatz', [StationenController::class, 'einsatz'])->whereNumber('vorstellung')->name('einsatz');
+                Route::post('vorstellungen/{vorstellung}/einsatz/code', [StationenController::class, 'codeErzeugen'])->whereNumber('vorstellung')->name('einsatz.code');
+                Route::put('vorstellungen/{vorstellung}/einsatz/namen', [StationenController::class, 'besetzungSpeichern'])->whereNumber('vorstellung')->name('einsatz.namen');
+                Route::delete('vorstellungen/{vorstellung}/einsatz/geraete/{geraet}', [StationenController::class, 'geraetAbmelden'])->whereNumber(['vorstellung', 'geraet'])->name('einsatz.geraet');
+            });
+
+            // Stufe 2: QR-Codes und Tische
+            Route::middleware('can:qrcodes.verwalten')->group(function () {
+                Route::get('tische', [TischeController::class, 'index'])->name('tische');
+                Route::post('tische/codes', [TischeController::class, 'erzeugen'])->name('tische.erzeugen');
+                Route::get('tische/codes.pdf', [TischeController::class, 'pdf'])->name('tische.pdf');
+                Route::delete('tische/codes/{tischcode}', [TischeController::class, 'loeschen'])->whereNumber('tischcode')->name('tische.loeschen');
+                Route::get('tische/zuordnen', [TischeController::class, 'zuordnenFormular'])->name('tische.zuordnen');
+                Route::post('tische/zuordnen', [TischeController::class, 'zuordnen']);
+                Route::get('tische/zugeordnet', [TischeController::class, 'erfolg'])->name('tische.erfolg');
+                Route::put('tische/zuordnungen/{zuordnung}', [TischeController::class, 'verlaengern'])->whereNumber('zuordnung')->name('tische.verlaengern');
+                Route::delete('tische/zuordnungen/{zuordnung}', [TischeController::class, 'loesen'])->whereNumber('zuordnung')->name('tische.loesen');
+                Route::put('veranstaltungen/{veranstaltung}/tische', [TischeController::class, 'alleVerlaengern'])->whereNumber('veranstaltung')->name('tische.alle');
+            });
         });
 
         // Verwaltung – nur Super-Admin
@@ -94,6 +162,11 @@ Route::middleware('auth')->group(function () {
             Route::post('benutzer/{person}/einladung', [BenutzerController::class, 'einladungErneut'])->name('benutzer.einladung');
 
             Route::get('protokoll', [ProtokollController::class, 'index'])->name('protokoll');
+            Route::get('tische', [BetreiberTischeController::class, 'index'])->name('tische');
+            Route::post('tische', [BetreiberTischeController::class, 'erzeugen'])->name('tische.erzeugen');
+            Route::get('tische.pdf', [BetreiberTischeController::class, 'pdf'])->name('tische.pdf');
+            Route::delete('tische/{tischcode}', [BetreiberTischeController::class, 'loeschen'])->whereNumber('tischcode')->name('tische.loeschen');
+
             Route::get('rechtstexte', [RechtstexteVerwaltung::class, 'bearbeiten'])->name('rechtstexte');
             Route::put('rechtstexte', [RechtstexteVerwaltung::class, 'speichern']);
         });

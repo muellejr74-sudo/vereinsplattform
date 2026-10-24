@@ -9,6 +9,7 @@ use App\Modules\Kern\Http\Controllers\PasswortController;
 use App\Modules\Kern\Mandanten\Mandantenkontext;
 use App\Modules\Kern\Models\Mandant;
 use App\Modules\Kern\Models\Rechtevergabe;
+use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Kern\Nachrichten\Einladung;
 use App\Modules\Kern\Rechte\Berechtigung;
 use App\Modules\Kern\Rechte\Rechtekatalog;
@@ -120,6 +121,9 @@ class PersonenController extends Controller
             'vorhanden' => $this->berechtigung->vergebeneRechte($person, $verein),
             'weitergebbar' => $this->berechtigung->weitergebbareRechte($vergeber, $verein),
             'gruppen' => Rechtekatalog::nachBereich(),
+            'vorstellungsrechte' => Rechtevergabe::where('user_id', $person->id)->whereNotNull('vorstellung_id')->get(),
+            'vorstellungen' => Vorstellung::with('veranstaltung')->where('beginn_um', '>=', now()->subDay())->orderBy('beginn_um')->get(),
+            'alleVorstellungen' => Vorstellung::with('veranstaltung')->get()->keyBy('id'),
             'vorlage' => Rechtekatalog::vorlageVereinsadmin(),
         ]);
     }
@@ -152,6 +156,39 @@ class PersonenController extends Controller
         }
 
         return redirect()->route('verein.personen.rechte', $person)->with('hinweis', $hinweis);
+    }
+
+    public function vorstellungsrechtVergeben(Request $request, User $person): RedirectResponse
+    {
+        $verein = $this->verein();
+        $this->pruefeMitglied($person, $verein);
+        $daten = $request->validate([
+            'vorstellung_id' => ['required', 'integer'],
+            'recht' => ['required', 'string', 'max:60'],
+        ], [], ['vorstellung_id' => 'Vorstellung', 'recht' => 'Recht']);
+        $vorstellung = Vorstellung::findOrFail($daten['vorstellung_id']);
+
+        try {
+            $this->rechteverwaltung->vorstellungsrechtVergeben($request->user(), $person, $verein, $vorstellung, $daten['recht']);
+        } catch (AuthorizationException $e) {
+            abort(403, $e->getMessage());
+        }
+
+        return back()->with('hinweis', 'Recht für die Vorstellung am '.$vorstellung->anzeige().' vergeben.');
+    }
+
+    public function vorstellungsrechtEntziehen(Request $request, User $person, Rechtevergabe $vergabe): RedirectResponse
+    {
+        $verein = $this->verein();
+        abort_unless($vergabe->user_id === $person->id, 404);
+
+        try {
+            $this->rechteverwaltung->vorstellungsrechtEntziehen($request->user(), $vergabe, $verein);
+        } catch (AuthorizationException $e) {
+            abort(403, $e->getMessage());
+        }
+
+        return back()->with('hinweis', 'Recht entfernt.');
     }
 
     public function einladungErneut(Request $request, User $person): RedirectResponse
