@@ -39,15 +39,16 @@ final class Rechtekatalog
         // Ticket
         'ticket.kategorien' => ['Kategorien und Preise', 'Ticket', 'ticket', '3', true],
         'ticket.kontingente' => ['Kontingente', 'Ticket', 'ticket', '3', true],
-        'ticket.reservierungen' => ['Reservierungen (ab Stufe 3: Freikarten-Stapel des Vereins)', 'Ticket', 'ticket', '3', true],
+        'ticket.reservierungen' => ['Reservierungen und Freikarten-Stapel des Vereins', 'Ticket', 'ticket', '3', true],
         'ticket.verkaufsstellen' => ['Vorverkaufsstellen verwalten', 'Ticket', 'ticket', '3', true],
-        'ticket.abendkasse' => ['Abendkasse', 'Ticket', 'ticket', '4', true],
-        'ticket.auswertungen' => ['Auswertungen ansehen', 'Ticket', 'ticket', '4', true],
+        'ticket.abendkasse' => ['Abendkasse', 'Ticket', 'ticket', '4a', true],
+        'ticket.auswertungen' => ['Auswertungen ansehen', 'Ticket', 'ticket', '4b', true],
 
         // Ticket (sensibel) – in der Vorlage standardmäßig aus
         'ticket.drucken' => ['Druckaufträge drucken', 'Ticket (sensibel)', 'ticket', '3', false],
-        'ticket.stornieren' => ['Stornieren', 'Ticket (sensibel)', 'ticket', '4', false],
-        'ticket.abschluss' => ['Abschluss durchführen', 'Ticket (sensibel)', 'ticket', '4', false],
+        'ticket.stornieren' => ['Stornieren', 'Ticket (sensibel)', 'ticket', '4a', false],
+        'ticket.zahlungseingang' => ['Zahlungseingang vermerken (Vorkasse)', 'Ticket (sensibel)', 'ticket', '4a', false],
+        'ticket.abschluss' => ['Abschluss durchführen', 'Ticket (sensibel)', 'ticket', '4b', false],
 
         // Saal
         'saal.artikel' => ['Artikel pflegen', 'Saal', 'saal', '6', true],
@@ -62,7 +63,7 @@ final class Rechtekatalog
     ];
 
     /** Stufen, deren Rechte bereits eine Funktion haben. */
-    private const AKTIVE_STUFEN = ['1a', '1b', '2', '3'];
+    private const AKTIVE_STUFEN = ['1a', '1b', '2', '3', '4a'];
 
     /** @return list<string> */
     public static function alle(): array

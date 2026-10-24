@@ -280,3 +280,21 @@ a { color: var(--farbe-primaer); }
 /* Stufe 3: Ticketverwaltung */
 .vorstellungsblock { border-top: 1px solid var(--farbe-rand); padding-top: 0.75rem; margin-top: 0.75rem; }
 .vorstellungsblock h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+
+/* Scanner: Einlass, Stornieren, Abendkasse (Stufe 4a, E119, E122) */
+.scanner video { display: block; width: 100%; max-height: 50vh; object-fit: cover; border-radius: var(--radius); background: #000; margin: 0.5rem 0; }
+.scan-ergebnis { display: flex; flex-direction: column; gap: 0.25rem; padding: 1.25rem 1rem; border-radius: var(--radius); color: #fff; margin: 0.75rem 0; min-height: 5.5rem; justify-content: center; }
+.scan-ergebnis strong { font-size: 1.6rem; line-height: 1.2; }
+.scan-ergebnis span { font-size: 1.05rem; }
+.scan-ergebnis--gruen { background: var(--status-fertig); }
+.scan-ergebnis--gelb { background: #f9a825; color: #1b1b18; }
+.scan-ergebnis--rot { background: var(--status-storniert); }
+.scan-ergebnis--leer { background: var(--farbe-sekundaer); color: var(--farbe-sekundaer-text); }
+.zaehler { font-size: 1.25rem; }
+.zaehler strong { font-size: 1.6rem; }
+.knopf--gross { font-size: 1.15rem; padding: 0.85rem 1.25rem; }
+.knopfzeile--voll { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.knopfzeile--voll .knopf { flex: 1 1 8rem; }
+.summe { font-size: 1.3rem; font-weight: 700; }
+.scanner video[hidden], .scan-ergebnis[hidden] { display: none; }
+a.station-knopf { text-decoration: none; color: var(--farbe-text); }

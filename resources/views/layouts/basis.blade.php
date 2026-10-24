@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('titel', config('app.name')) – {{ config('app.name') }}</title>
-    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=6">
     @php
         // Vereinsdesign (E76): Farben aus der Datenbank, nur wenn ein Verein aktiv ist.
         $aktiverVereinDesign = app(\App\Modules\Kern\Mandanten\Mandantenkontext::class)->mandant();
@@ -68,5 +68,6 @@
         <span aria-hidden="true">·</span>
         <span>&copy; {{ now()->year }} {{ config('app.name') }}</span>
     </footer>
+    @stack('skripte')
 </body>
 </html>

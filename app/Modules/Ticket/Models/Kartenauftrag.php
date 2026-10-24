@@ -8,6 +8,7 @@ use App\Modules\Kern\Models\Vorstellung;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Kartenauftrag einer Verkaufsstelle oder – bei Freikarten – auch vereinsintern (E26, E26a, E114c).
@@ -75,13 +76,48 @@ class Kartenauftrag extends Model
         return (int) $this->positionen->sum('anzahl_bestaetigt');
     }
 
+    /** Druckaufträge aus Reservierungen (E40) und Vorkasse-Versand (E124) – ohne Bestätigungsschritt. */
+    public function istReservierung(): bool
+    {
+        return in_array($this->art, ['reservierung', 'versand'], true);
+    }
+
+    public function reservierung(): HasOne
+    {
+        return $this->hasOne(Reservierung::class);
+    }
+
     public function statusText(): string
     {
+        if ($this->status === 'gedruckt' && $this->art === 'reservierung') {
+            return 'gedruckt – an der Abendkasse hinterlegt';
+        }
+        if ($this->status === 'gedruckt' && $this->art === 'versand') {
+            return 'gedruckt – Versand ausstehend';
+        }
+        if ($this->status === 'ausgegeben' && $this->art === 'versand') {
+            return 'versendet';
+        }
+
         return self::STATUS[$this->status] ?? $this->status;
+    }
+
+    public function artText(): string
+    {
+        return match ($this->art) {
+            'freikarten' => 'Freikarten-Stapel',
+            'reservierung' => 'Reservierung (Abendkasse)',
+            'versand' => 'Vorkasse – Versand per Post',
+            default => 'Karten für den Verkauf',
+        };
     }
 
     public function stelleText(): string
     {
+        if ($this->istReservierung()) {
+            return 'Reservierung '.$this->name;
+        }
+
         return $this->verkaufsstelle?->name ?? 'Verein (intern)';
     }
 }

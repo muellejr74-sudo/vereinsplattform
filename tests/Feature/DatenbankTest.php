@@ -22,7 +22,7 @@ class DatenbankTest extends TestCase
         foreach (['users', 'sessions', 'cache', 'jobs', 'migrations', 'mandanten', 'mitgliedschaften', 'protokoll',
             'plattformtexte', 'vereinstexte', 'vertraute_geraete', 'einladung_tokens', 'rechtevergaben', 'mandant_module',
             'orte', 'saele', 'veranstaltungen', 'vorstellungen', 'stationen', 'stationsbesetzungen', 'stationsgeraete', 'qr_codes', 'tischzuordnungen',
-            'ticketkategorien', 'preisabweichungen', 'verkaufsstellen', 'verkaufsstellen_benutzer', 'kartenauftraege', 'auftragspositionen', 'tickets', 'nummernkreise'] as $tabelle) {
+            'ticketkategorien', 'preisabweichungen', 'verkaufsstellen', 'verkaufsstellen_benutzer', 'kartenauftraege', 'auftragspositionen', 'tickets', 'nummernkreise', 'ticket_einstellungen', 'reservierungen', 'reservierungspositionen'] as $tabelle) {
             $this->assertTrue(Schema::hasTable($tabelle), "Tabelle {$tabelle} fehlt.");
         }
     }

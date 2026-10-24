@@ -1,15 +1,24 @@
 <?php
 
+use App\Modules\Ticket\Http\Controllers\AbendkasseController;
 use App\Modules\Ticket\Http\Controllers\AuftraegeController;
+use App\Modules\Ticket\Http\Controllers\EinlassController;
+use App\Modules\Ticket\Http\Controllers\EinstellungenController;
 use App\Modules\Ticket\Http\Controllers\PruefenController;
+use App\Modules\Ticket\Http\Controllers\ReservierungenController;
+use App\Modules\Ticket\Http\Controllers\StornoController;
 use App\Modules\Ticket\Http\Controllers\UebersichtController;
 use App\Modules\Ticket\Http\Controllers\VeranstaltungTicketsController;
 use App\Modules\Ticket\Http\Controllers\VerkaufsstellenController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Adressen der Ticketverwaltung (Stufe 3).
+| Adressen der Ticketverwaltung (Stufe 3 und 4a).
 */
+
+// Einlass-Station ohne Benutzerkonto, angemeldet über den Einsatz-Code (E29, E119)
+Route::get('/station/einlass', [EinlassController::class, 'show'])->name('station.einlass');
+Route::post('/station/einlass', [EinlassController::class, 'scannen'])->middleware('throttle:180,1');
 
 // Öffentliche Prüfseite des Ticket-QR-Codes (E112)
 Route::get('/k/{code}', PruefenController::class)->where('code', '[A-Za-z0-9.\-]{10,40}')->middleware('throttle:60,1')->name('ticket.pruefen');
@@ -50,5 +59,43 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
         Route::post('auftraege/{auftrag}/gedruckt', [AuftraegeController::class, 'gedruckt'])->whereNumber('auftrag')->name('auftraege.gedruckt');
         Route::post('auftraege/{auftrag}/uebergeben', [AuftraegeController::class, 'uebergeben'])->whereNumber('auftrag')->name('auftraege.uebergeben');
         Route::post('karten/{ticket}/nachdruck', [AuftraegeController::class, 'nachdruck'])->whereNumber('ticket')->name('nachdruck');
+    });
+
+    // Reservierungen und Vorkasse (E40, E124–E127)
+    Route::get('reservierungen', [ReservierungenController::class, 'index'])->name('reservierungen.index');
+    Route::get('reservierungen/neu', [ReservierungenController::class, 'create'])->name('reservierungen.create');
+    Route::post('reservierungen', [ReservierungenController::class, 'store'])->name('reservierungen.store');
+    Route::post('reservierungen/ueberfaellig/stornieren', [ReservierungenController::class, 'ueberfaelligeStornieren'])->name('reservierungen.ueberfaellig');
+    Route::get('reservierungen/{reservierung}', [ReservierungenController::class, 'show'])->whereNumber('reservierung')->name('reservierungen.show');
+    Route::post('reservierungen/{reservierung}/bezahlt', [ReservierungenController::class, 'bezahlt'])->whereNumber('reservierung')->middleware('can:ticket.zahlungseingang')->name('reservierungen.bezahlt');
+    Route::post('reservierungen/{reservierung}/abholung', [ReservierungenController::class, 'abholung'])->whereNumber('reservierung')->name('reservierungen.abholung');
+    Route::post('reservierungen/{reservierung}/stornieren', [ReservierungenController::class, 'stornieren'])->whereNumber('reservierung')->name('reservierungen.stornieren');
+
+    // Einstellungen (E40a, E121, E126, E127)
+    Route::get('einstellungen', [EinstellungenController::class, 'show'])->name('einstellungen');
+    Route::put('einstellungen', [EinstellungenController::class, 'allgemein'])->middleware('can:ticket.reservierungen')->name('einstellungen.allgemein');
+    Route::put('einstellungen/bank', [EinstellungenController::class, 'bank'])->middleware('can:ticket.zahlungseingang')->name('einstellungen.bank');
+
+    // Abendkasse (E32, E41–E46a, E114)
+    Route::middleware('can:ticket.abendkasse')->prefix('abendkasse')->name('abendkasse.')->group(function () {
+        Route::get('/', [AbendkasseController::class, 'index'])->name('index');
+        Route::get('{vorstellung}', [AbendkasseController::class, 'show'])->whereNumber('vorstellung')->name('show');
+        Route::post('{vorstellung}/verkauf', [AbendkasseController::class, 'verkauf'])->whereNumber('vorstellung')->name('verkauf');
+        Route::get('{vorstellung}/reservierungen/{reservierung}', [AbendkasseController::class, 'reservierung'])->whereNumber(['vorstellung', 'reservierung'])->name('reservierung');
+        Route::post('{vorstellung}/reservierungen/{reservierung}', [AbendkasseController::class, 'ausgeben'])->whereNumber(['vorstellung', 'reservierung']);
+        Route::post('{vorstellung}/bestand', [AbendkasseController::class, 'bestandScan'])->whereNumber('vorstellung')->name('bestand.scan');
+        Route::get('{vorstellung}/bestand/{ticket}', [AbendkasseController::class, 'bestand'])->whereNumber(['vorstellung', 'ticket'])->name('bestand');
+        Route::post('{vorstellung}/bestand/{ticket}', [AbendkasseController::class, 'bestandVerkaufen'])->whereNumber(['vorstellung', 'ticket']);
+        Route::post('{vorstellung}/freikarten/{auftrag}', [AbendkasseController::class, 'freikarten'])->whereNumber(['vorstellung', 'auftrag'])->name('freikarten');
+        Route::post('{vorstellung}/nicht-abgeholt', [AbendkasseController::class, 'nichtAbgeholt'])->whereNumber('vorstellung')->name('nicht_abgeholt');
+    });
+
+    // Stornieren einzeln und per Dauer-Scan (E1, E4b, E119)
+    Route::middleware('can:ticket.stornieren')->prefix('stornieren')->name('storno.')->group(function () {
+        Route::get('/', [StornoController::class, 'index'])->name('index');
+        Route::post('erfassen', [StornoController::class, 'erfassen'])->middleware('throttle:240,1')->name('erfassen');
+        Route::post('entfernen/{ticket}', [StornoController::class, 'entfernen'])->whereNumber('ticket')->name('entfernen');
+        Route::post('leeren', [StornoController::class, 'leeren'])->name('leeren');
+        Route::post('ausfuehren', [StornoController::class, 'ausfuehren'])->name('ausfuehren');
     });
 });

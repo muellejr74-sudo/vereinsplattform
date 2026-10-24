@@ -4,7 +4,6 @@ namespace App\Modules\Ticket\Dienste;
 
 use App\Models\User;
 use App\Modules\Kern\Dienste\Protokoll;
-use App\Modules\Kern\Mandanten\Mandantenkontext;
 use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Ticket\Models\Auftragsposition;
 use App\Modules\Ticket\Models\Kartenauftrag;
@@ -21,8 +20,7 @@ use InvalidArgumentException;
 class Auftragsverwaltung
 {
     public function __construct(
-        private Mandantenkontext $kontext,
-        private Nummernvergabe $nummern,
+        private Kartenerzeugung $erzeugung,
         private Kontingent $kontingent,
     ) {}
 
@@ -105,38 +103,22 @@ class Auftragsverwaltung
                 throw new InvalidArgumentException('Nicht genug Plätze frei: '.$summe.' angefragt, '.max(0, $frei).' frei.');
             }
 
-            $verein = $this->kontext->mandant();
-            $nummern = $this->nummern->naechste($verein, $summe);
-            $stapel = $auftrag->istFreikarten() || filled($auftrag->name);
-            $tickets = collect();
-            $lauf = 0;
-
+            $zeilen = [];
             foreach ($positionen as $position) {
                 $position->save();
-                $preis = $position->kategorie->preisFuer($vorstellung->id);
-                for ($i = 0; $i < $position->anzahl_bestaetigt; $i++) {
-                    $tickets->push(Ticket::create([
-                        'nummer' => $nummern[$lauf],
-                        'pruefzeichen' => Nummernvergabe::pruefzeichen(),
-                        'vorstellung_id' => $vorstellung->id,
-                        'kategorie_id' => $position->kategorie_id,
-                        'preis_cent' => $preis,
-                        'ist_freikarte' => (bool) $position->kategorie->ist_freikarte,
-                        'status' => 'erzeugt',
-                        'name' => $auftrag->name,
-                        'stapel_position' => $stapel ? $lauf + 1 : null,
-                        'stapel_groesse' => $stapel ? $summe : null,
-                        'kartenauftrag_id' => $auftrag->id,
-                        'verkaufsstelle_id' => $auftrag->verkaufsstelle_id,
-                    ]));
-                    $lauf++;
-                }
+                $zeilen[] = ['kategorie' => $position->kategorie, 'anzahl' => $position->anzahl_bestaetigt, 'preis_cent' => $position->kategorie->preisFuer($vorstellung->id)];
             }
+            $tickets = $this->erzeugung->erzeugen($vorstellung, $zeilen, [
+                'status' => 'erzeugt',
+                'name' => $auftrag->name,
+                'kartenauftrag_id' => $auftrag->id,
+                'verkaufsstelle_id' => $auftrag->verkaufsstelle_id,
+            ], $auftrag->istFreikarten() || filled($auftrag->name));
 
             $auftrag->forceFill(['status' => 'bestaetigt', 'bestaetigt_von' => $durch->id, 'bestaetigt_am' => now()])->save();
             Protokoll::schreibe('ticket.auftrag_bestaetigt', $auftrag, [
                 'angefordert' => (int) $positionen->sum('anzahl'), 'bestaetigt' => $summe,
-                'von' => $nummern[0], 'bis' => end($nummern),
+                'von' => $tickets->first()->nummer, 'bis' => $tickets->last()->nummer,
             ], $durch);
 
             return $tickets;
@@ -174,6 +156,9 @@ class Auftragsverwaltung
     public function uebergeben(Kartenauftrag $auftrag, User $durch): int
     {
         return DB::transaction(function () use ($auftrag, $durch) {
+            if ($auftrag->istReservierung()) {
+                throw new InvalidArgumentException('Karten einer Reservierung werden an der Abendkasse ausgegeben bzw. als „versendet“ markiert.');
+            }
             if ($auftrag->status !== 'gedruckt') {
                 throw new InvalidArgumentException('Bitte die Karten zuerst drucken.');
             }
@@ -189,7 +174,7 @@ class Auftragsverwaltung
     /** Nachdruck einzelner Karten mit derselben Nummer (E117). */
     public function nachdruck(Ticket $ticket, User $durch): void
     {
-        if (! in_array($ticket->status, ['gedruckt', 'ausgegeben'], true)) {
+        if (! in_array($ticket->status, ['gedruckt', 'ausgegeben', 'verkauft'], true)) {
             throw new InvalidArgumentException('Nur bereits gedruckte Karten können nachgedruckt werden.');
         }
         $ticket->increment('druckanzahl');

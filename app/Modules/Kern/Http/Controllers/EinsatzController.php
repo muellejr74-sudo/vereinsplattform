@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -101,6 +102,12 @@ class EinsatzController extends Controller
         $geraet = $this->einsatz->geraetAusAnfrage($request);
         if (! $geraet) {
             return redirect()->route('einsatz')->withCookie(Cookie::forget(Einsatz::COOKIE));
+        }
+
+        // Station „Einlass“ öffnet direkt den Scanner, sobald das Ticketmodul aktiv ist (Stufe 4a).
+        if ($geraet->station->art === 'einlass' && Route::has('station.einlass')
+            && app(Mandantenkontext::class)->mandant()?->hatModul('ticket')) {
+            return redirect()->route('station.einlass');
         }
 
         return view('kern::einsatz.start', [
