@@ -66,23 +66,35 @@ class EtikettPdf
 
         // 2. Datum und Uhrzeit
         $pdf->SetFont('Helvetica', '', 9.5);
-        $pdf->SetXY($x, $y + 5.6);
+        $zeileY = $y + 5.6;
+        $pdf->SetXY($x, $zeileY);
         $pdf->Cell($textBreite, 4.5, $this->text($vorstellung->anzeige()));
 
-        // 3. Kategorie · Preis bzw. „Freikarte“
-        $pdf->SetXY($x, $y + 10.4);
+        // 3. Einlass ab … (E77, Wunsch des Betreibers 24.10.2026) – nur wenn hinterlegt
+        if ($vorstellung->einlass_um) {
+            $zeileY += 4.4;
+            $pdf->SetFont('Helvetica', '', 8.5);
+            $pdf->SetXY($x, $zeileY);
+            $pdf->Cell($textBreite, 4.5, $this->text('Einlass ab '.$vorstellung->einlass_um->format('H:i').' Uhr'));
+        }
+
+        // 4. Kategorie · Preis bzw. „Freikarte“
+        $zeileY += 4.6;
+        $pdf->SetFont('Helvetica', '', 9.5);
+        $pdf->SetXY($x, $zeileY);
         $zeile = $ticket->ist_freikarte ? 'Freikarte' : $ticket->kategorie->name.' · '.Geld::anzeigen($ticket->preis_cent);
         $pdf->Cell($textBreite, 4.5, $this->kuerzen($pdf, $zeile, $textBreite));
 
-        // 4. Name (Reservierung/Freikarte) mit Stapelposition
+        // 5. Name (Reservierung/Freikarte) mit Stapelposition – ohne „Name:“
         if ($ticket->name) {
+            $zeileY += 4.6;
             $pdf->SetFont('Helvetica', '', 8.5);
-            $pdf->SetXY($x, $y + 15.4);
-            $name = 'Name: '.$ticket->name.($ticket->stapelText() ? ' · '.$ticket->stapelText() : '');
+            $pdf->SetXY($x, $zeileY);
+            $name = $ticket->name.($ticket->stapelText() ? ' · '.$ticket->stapelText() : '');
             $pdf->Cell($textBreite, 4.5, $this->kuerzen($pdf, $name, $textBreite));
         }
 
-        // 5. Ticketnummer
+        // 6. Ticketnummer
         $pdf->SetFont('Courier', 'B', 11);
         $pdf->SetXY($x, $h - $rand - 5.5);
         $pdf->Cell($textBreite, 5, $ticket->nummer);

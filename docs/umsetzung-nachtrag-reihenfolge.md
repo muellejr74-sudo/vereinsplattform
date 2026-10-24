@@ -14,3 +14,7 @@ Freigegeben am 24.10.2026 als eigener kleiner Schritt (E133, Variante B).
 1. Verein → **Stationen**: eine Station am Griff ☰ nach oben ziehen (Handy und PC), eine mit ▲ ▼ verschieben → „Reihenfolge gespeichert“; Seite neu laden → Reihenfolge bleibt.
 2. Station antippen → bearbeiten, speichern → sie bleibt an ihrer Stelle.
 3. Tickets → Veranstaltung → **Kategorien** genauso; beim Karten verkaufen erscheinen sie in der neuen Reihenfolge.
+
+## Ebenfalls in diesem Schritt: Etikett (E134)
+
+Auf dem Ticket-Etikett entfällt das Wort „Name:“ vor dem Namen; unter Datum und Uhrzeit steht neu „Einlass ab HH:MM Uhr“ (aus der Vorstellung; ohne Einlasszeit entfällt die Zeile). Abnahme: ein Etikett mit Namen drucken und prüfen.
