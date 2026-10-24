@@ -23,7 +23,13 @@
                 <tr>
                     <td data-titel="Name">{{ $person->name }} @if ($person->istSuperAdmin()) <span class="marke">Super-Admin</span> @endif</td>
                     <td data-titel="E-Mail">{{ $person->email }}</td>
-                    <td data-titel="Vereine">{{ $person->istSuperAdmin() ? 'alle' : ($person->vereine->pluck('kuerzel')->join(', ') ?: '–') }}</td>
+                    <td data-titel="Vereine">
+                        @if ($person->istSuperAdmin())
+                            alle
+                        @else
+                            {{ $person->vereine->map(fn ($v) => $v->kuerzel.(in_array($v->id, $admins->get($person->id, []), true) ? ' (Admin)' : ''))->join(', ') ?: '–' }}
+                        @endif
+                    </td>
                     <td data-titel="Letzte Anmeldung">{{ $person->letzte_anmeldung_am?->format('d.m.Y H:i') ?? 'noch nie' }}</td>
                     <td data-titel="Status"><span class="status {{ $person->aktiv ? 'status--fertig' : 'status--storniert' }}">{{ $person->aktiv ? 'aktiv' : 'deaktiviert' }}</span></td>
                     <td class="aktionen">

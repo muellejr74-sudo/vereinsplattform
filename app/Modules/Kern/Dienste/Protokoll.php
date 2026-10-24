@@ -78,6 +78,9 @@ class Protokoll
         'verein.geaendert' => 'Verein geändert',
         'verein.aktiviert' => 'Verein aktiviert',
         'verein.deaktiviert' => 'Verein deaktiviert',
+        'verein.design_geaendert' => 'Vereinsdesign geändert',
+        'verein.module_geaendert' => 'Module geändert',
+        'rechte.geaendert' => 'Rechte geändert',
         'rechtstext.geaendert' => 'Rechtstext geändert',
     ];
 

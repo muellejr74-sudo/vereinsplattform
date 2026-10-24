@@ -42,6 +42,6 @@
                 <a href="{{ route('verwaltung.benutzer.index') }}">Abbrechen</a>
             </div>
         </form>
-        <p class="hinweis">Rechte und Rollen (z. B. Vereinsadmin) folgen in Stufe 1b.</p>
+        <p class="hinweis">Rechte werden pro Verein vergeben: Verwaltung → Vereine → „Personen &amp; Rechte“.</p>
     </section>
 @endsection

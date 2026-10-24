@@ -30,6 +30,7 @@ Die Plattform ist ein **modularer Monolith**: eine Anwendung, innen klar in Modu
    | `Ansichten` | Seitenvorlagen, Namensraum `modulname::` |
 
 5. **Mandantengebundene Modelle** verwenden den Baustein `GehoertZuMandant` (Kern). Er filtert jede Abfrage automatisch auf den aktiven Verein, setzt die Vereinskennung beim Anlegen und verweigert Abfragen und Speichern ohne aktiven Verein. Den Filter nie mit `withoutGlobalScopes()` umgehen; für Arbeiten in einem bestimmten Verein gibt es `Mandantenkontext::fuer($verein, fn () => …)`.
-6. Wichtige Vorgänge werden mit `Protokoll::schreibe('bereich.vorgang', $ziel, [...])` ins unveränderbare Protokoll geschrieben.
+6. **Rechte** stehen im Rechtekatalog des Kerns (`Kern/Rechte/Rechtekatalog.php`) und werden mit `can:recht` (Middleware) bzw. `@can('recht')` (Ansicht) geprüft. Ein neues Modul trägt seine Rechte dort mit Modulkennung ein; ist das Modul für einen Verein nicht freigeschaltet, ruhen sie automatisch (E96).
+7. Wichtige Vorgänge werden mit `Protokoll::schreibe('bereich.vorgang', $ziel, [...])` ins unveränderbare Protokoll geschrieben.
 
 Die vollständige Architektur steht im Architekturdokument (Claude-Projekt „Ticketverkauf“, `claude/Architekturdokument.md`).

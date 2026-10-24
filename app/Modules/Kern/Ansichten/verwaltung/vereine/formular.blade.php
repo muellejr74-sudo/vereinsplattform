@@ -24,6 +24,8 @@
                 <a href="{{ route('verwaltung.vereine.index') }}">Abbrechen</a>
             </div>
         </form>
-        <p class="hinweis">Logo, Vereinsfarben und Modulfreischaltung folgen in Stufe 1b.</p>
+        @if ($verein->exists)
+            <p class="hinweis"><a href="{{ route('verwaltung.vereine.design', $verein) }}">Logo, Vereinsfarben und Module bearbeiten</a></p>
+        @endif
     </section>
 @endsection

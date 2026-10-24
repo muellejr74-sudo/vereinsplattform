@@ -2,11 +2,13 @@
 
 use App\Modules\Kern\Http\Middleware\NurSuperAdmin;
 use App\Modules\Kern\Http\Middleware\SetzeMandantenkontext;
+use App\Modules\Kern\Http\Middleware\VereinErforderlich;
 use App\Modules\Kern\Http\Middleware\ZweiFaktorEingerichtet;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'superadmin' => NurSuperAdmin::class,
             'zweifaktor' => ZweiFaktorEingerichtet::class,
+            'verein' => VereinErforderlich::class,
         ]);
+
+        // Zugriffsprüfung VOR dem Laden von Datensätzen aus der Adresse: Wer keinen Zugriff hat,
+        // erhält immer "Kein Zugriff" und erfährt nicht, ob es einen Datensatz gibt.
+        $middleware->prependToPriorityList(SubstituteBindings::class, NurSuperAdmin::class);
 
         $middleware->redirectGuestsTo(fn () => route('anmeldung'));
         $middleware->redirectUsersTo(fn () => route('startseite'));

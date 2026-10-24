@@ -29,6 +29,10 @@ class VerwaltungTest extends TestCase
         $this->post('/verwaltung/benutzer', ['name' => 'X', 'email' => 'x@y.de'])->assertForbidden();
         $this->post('/verwaltung/vereine/'.$verein->id.'/aktiv')->assertForbidden();
         $this->assertTrue($verein->fresh()->aktiv);
+
+        // Auch bei nicht vorhandenen Datensätzen: "Kein Zugriff" statt "nicht gefunden".
+        $this->get('/verwaltung/benutzer/999999/edit')->assertForbidden();
+        $this->get('/verwaltung/vereine/999999/edit')->assertForbidden();
     }
 
     public function test_verein_anlegen_bearbeiten_deaktivieren(): void
