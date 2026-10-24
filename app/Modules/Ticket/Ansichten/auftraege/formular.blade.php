@@ -20,7 +20,7 @@
                 </select>
 
                 <label for="vorstellung_id">Vorstellung</label>
-                <select id="vorstellung_id" name="vorstellung_id" required onchange="document.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== this.selectedOptions[0].dataset.veranstaltung; }, this)">
+                <select id="vorstellung_id" name="vorstellung_id" required onchange="var v = this.selectedOptions[0].dataset.veranstaltung, f = this.form; f.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== v; }); var k = f.querySelector('button[type=submit]'); if (k && f.art.value === 'karten') k.disabled = !!f.querySelector('[data-ohne-kategorien]:not([hidden])');">
                     @foreach ($vorstellungen as $v)
                         <option value="{{ $v->id }}" data-veranstaltung="{{ $v->veranstaltung_id }}" @selected((int) old('vorstellung_id', $vorauswahl) === $v->id)>{{ $v->veranstaltung->name }} – {{ $v->anzeige() }}</option>
                     @endforeach
@@ -33,27 +33,39 @@
                     <input id="anzahl" name="anzahl" type="number" min="1" max="2000" required value="{{ old('anzahl', 1) }}" class="eingabe--kurz">
                     <small class="hinweis">Alle Karten bekommen diesen Namen und werden als Stapel nummeriert (z. B. „3/10“). Freikarten zählen zum Kontingent.</small>
                 @else
-                    @php $erste = $vorstellungen->firstWhere('id', (int) old('vorstellung_id', $vorauswahl)) ?? $vorstellungen->first(); @endphp
-                    @foreach ($kategorien as $veranstaltungId => $liste)
-                        <fieldset class="rechte-gruppe" data-veranstaltung="{{ $veranstaltungId }}" @if ($veranstaltungId !== $erste->veranstaltung_id) hidden @endif>
-                            <legend>Anzahl je Kategorie</legend>
-                            @foreach ($liste as $k)
-                                <div class="formular--zeile" style="margin:0.25rem 0">
-                                    <label for="m{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
-                                    <input id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}" style="flex:0 0 6rem">
-                                </div>
-                            @endforeach
-                        </fieldset>
+                    @php
+                        $erste = $vorstellungen->firstWhere('id', (int) old('vorstellung_id', $vorauswahl)) ?? $vorstellungen->first();
+                        $veranstaltungen = $vorstellungen->pluck('veranstaltung')->unique('id');
+                    @endphp
+                    @foreach ($veranstaltungen as $veranstaltung)
+                        @php $liste = $kategorien->get($veranstaltung->id, collect()); @endphp
+                        @if ($liste->isEmpty())
+                            <div class="meldung meldung--fehler" data-veranstaltung="{{ $veranstaltung->id }}" data-ohne-kategorien @if ($veranstaltung->id !== $erste->veranstaltung_id) hidden @endif>
+                                Für „{{ $veranstaltung->name }}“ sind noch keine Kartenkategorien mit Preisen angelegt – deshalb kann hier noch keine Anzahl eingegeben werden.
+                                @can('ticket.kategorien')
+                                    <br><a href="{{ route('tickets.veranstaltung', $veranstaltung) }}">Jetzt Kategorien und Preise anlegen</a>
+                                @else
+                                    Bitte beim Verein melden.
+                                @endcan
+                            </div>
+                        @else
+                            <fieldset class="rechte-gruppe" data-veranstaltung="{{ $veranstaltung->id }}" @if ($veranstaltung->id !== $erste->veranstaltung_id) hidden @endif>
+                                <legend>Anzahl Karten je Kategorie</legend>
+                                @foreach ($liste as $k)
+                                    <div class="formular--zeile" style="margin:0.25rem 0">
+                                        <label for="m{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
+                                        <input id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}" style="flex:0 0 6rem">
+                                    </div>
+                                @endforeach
+                            </fieldset>
+                        @endif
                     @endforeach
-                    @if ($kategorien->isEmpty())
-                        <p class="hinweis">Für diese Veranstaltungen sind noch keine Kategorien angelegt.</p>
-                    @endif
                 @endif
 
                 <label for="bemerkung">Bemerkung (optional)</label>
                 <input id="bemerkung" name="bemerkung" maxlength="255" value="{{ old('bemerkung') }}">
 
-                <button type="submit" class="knopf">Anfordern</button>
+                <button type="submit" class="knopf" @if ($art !== 'freikarten' && ! $kategorien->has($erste->veranstaltung_id ?? 0)) disabled @endif>Anfordern</button>
             </form>
             <p class="hinweis">Die Druckstelle bestätigt den Auftrag. Erst dann werden die Plätze belegt und die Karten gedruckt.</p>
         @endif

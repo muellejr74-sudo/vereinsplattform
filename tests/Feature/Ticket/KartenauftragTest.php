@@ -3,6 +3,8 @@
 namespace Tests\Feature\Ticket;
 
 use App\Modules\Kern\Models\Mandant;
+use App\Modules\Kern\Models\Veranstaltung;
+use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Ticket\Models\Kartenauftrag;
 use App\Modules\Ticket\Models\Ticket;
 use App\Modules\Ticket\Models\Verkaufsstelle;
@@ -65,6 +67,28 @@ class KartenauftragTest extends TicketTestCase
         $pos = $this->im($this->tvm, fn () => $b->positionen()->first());
         $this->post('/tickets/auftraege/'.$b->id.'/bestaetigen', ['mengen' => [$pos->id => 20]])->assertSessionHasNoErrors();
         $this->assertCount(50, $this->tickets());
+    }
+
+    public function test_bestellformular_zeigt_mengenfelder_und_hinweis_ohne_kategorien(): void
+    {
+        $this->als($this->verkaeufer)->get('/tickets/auftraege/neu')->assertOk()
+            ->assertSee('name="mengen['.$this->erwachsene->id.']"', false)->assertDontSee('noch keine Kartenkategorien');
+
+        $ohne = $this->im($this->tvm, function () {
+            $v = Veranstaltung::create(['name' => 'Kabarettabend']);
+            Vorstellung::create(['veranstaltung_id' => $v->id, 'saal_id' => $this->vorstellung->saal_id,
+                'einlass_um' => '2026-11-25 19:00', 'beginn_um' => '2026-11-25 20:00', 'kontingent' => 80]);
+
+            return $v;
+        });
+
+        $seite = $this->get('/tickets/auftraege/neu');
+        $seite->assertSee('Für „Kabarettabend“ sind noch keine Kartenkategorien', false)->assertSee('Bitte beim Verein melden.');
+        $this->assertMatchesRegularExpression('/<button type="submit" class="knopf"\s+disabled/', $seite->getContent(), 'Erste Vorstellung (Kabarett) hat keine Kategorien → Anfordern gesperrt.');
+
+        // Wer Kategorien pflegen darf, bekommt den direkten Weg dorthin.
+        $this->baeckerei->benutzer()->attach($pfleger = $this->personMitRechten($this->tvm, ['ticket.kategorien']));
+        $this->als($pfleger)->get('/tickets/auftraege/neu')->assertSee('/tickets/veranstaltungen/'.$ohne->id, false);
     }
 
     public function test_ohne_kontingent_keine_bestaetigung(): void

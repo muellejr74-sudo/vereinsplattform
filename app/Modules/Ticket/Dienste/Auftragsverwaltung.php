@@ -33,7 +33,7 @@ class Auftragsverwaltung
     {
         $mengen = array_filter(array_map('intval', $mengen), fn ($n) => $n > 0);
         if ($mengen === []) {
-            throw new InvalidArgumentException('Bitte mindestens eine Karte angeben.');
+            throw new InvalidArgumentException('Bitte bei mindestens einer Kategorie eine Anzahl größer als 0 eintragen.');
         }
         if ($vorstellung->istVorbei()) {
             throw new InvalidArgumentException('Diese Vorstellung ist bereits vorbei.');
