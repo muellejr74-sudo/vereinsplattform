@@ -91,6 +91,17 @@ class KartenauftragTest extends TicketTestCase
         $this->als($pfleger)->get('/tickets/auftraege/neu')->assertSee('/tickets/veranstaltungen/'.$ohne->id, false);
     }
 
+    public function test_anforderung_hoechstens_so_viele_wie_frei(): void
+    {
+        $this->als($this->verkaeufer)->get('/tickets/auftraege/neu')->assertSee('data-frei="50"', false);
+        $this->post('/tickets/auftraege', ['art' => 'karten', 'verkaufsstelle_id' => $this->baeckerei->id, 'vorstellung_id' => $this->vorstellung->id,
+            'mengen' => [$this->erwachsene->id => 40, $this->kinder->id => 11]])->assertSessionHasErrors('auftrag');
+        $this->assertStringContainsString('nur noch 50 Plätze frei', session('errors')->first('auftrag'));
+        $this->assertSame(0, $this->im($this->tvm, fn () => Kartenauftrag::count()));
+
+        $this->bestellen([$this->erwachsene->id => 50]);
+    }
+
     public function test_ohne_kontingent_keine_bestaetigung(): void
     {
         $this->vorstellung->forceFill(['kontingent' => null])->save();

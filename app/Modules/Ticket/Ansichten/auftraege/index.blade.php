@@ -28,7 +28,7 @@
             @forelse ($auftraege as $a)
                 <tr>
                     <td data-titel="Nr."><a href="{{ route('tickets.auftraege.show', $a) }}">#{{ $a->id }}</a></td>
-                    <td data-titel="Für">{{ $a->stelleText() }}@if ($a->istFreikarten())<br><span class="marke">Freikarten: {{ $a->name }}</span>@endif</td>
+                    <td data-titel="Für">{{ $a->istReservierung() ? $a->artText() : $a->stelleText() }}@if ($a->istFreikarten() || $a->istReservierung())<br><span class="marke">{{ $a->istFreikarten() ? 'Freikarten' : 'Name' }}: {{ $a->name }}</span>@endif</td>
                     <td data-titel="Vorstellung">{{ $a->vorstellung->veranstaltung->name }}<br><span class="hinweis">{{ $a->vorstellung->anzeige() }}</span></td>
                     <td data-titel="Karten">
                         @foreach ($a->positionen as $p){{ $p->anzahl_bestaetigt ?? $p->anzahl }} × {{ $p->kategorie->name }}@if (! $loop->last), @endif @endforeach

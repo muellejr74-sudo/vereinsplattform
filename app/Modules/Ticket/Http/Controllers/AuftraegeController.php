@@ -3,10 +3,12 @@
 namespace App\Modules\Ticket\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Kern\Mandanten\Mandantenkontext;
 use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Ticket\Dienste\Auftragsverwaltung;
 use App\Modules\Ticket\Dienste\EtikettPdf;
 use App\Modules\Ticket\Dienste\Kontingent;
+use App\Modules\Ticket\Dienste\Reservierungsverwaltung;
 use App\Modules\Ticket\Dienste\TicketZugriff;
 use App\Modules\Ticket\Models\Kartenauftrag;
 use App\Modules\Ticket\Models\Ticket;
@@ -35,7 +37,8 @@ class AuftraegeController extends Controller
         $status = $filter['status'] ?? 'offen';
 
         $abfrage = Kartenauftrag::with(['vorstellung.veranstaltung', 'verkaufsstelle', 'positionen.kategorie'])
-            ->when($status === 'offen', fn ($q) => $q->whereIn('status', ['angefordert', 'bestaetigt', 'gedruckt']))
+            ->when($status === 'offen', fn ($q) => $q->where(fn ($w) => $w->whereIn('status', ['angefordert', 'bestaetigt'])
+                ->orWhere(fn ($g) => $g->where('status', 'gedruckt')->where('art', '!=', 'reservierung'))))
             ->when(! in_array($status, ['offen', 'alle'], true), fn ($q) => $q->where('status', $status))
             ->orderByDesc('id');
 
@@ -52,7 +55,7 @@ class AuftraegeController extends Controller
         ]);
     }
 
-    public function create(Request $request): View|RedirectResponse
+    public function create(Request $request, Kontingent $kontingent): View|RedirectResponse
     {
         $benutzer = $request->user();
         $art = $request->query('art') === 'freikarten' ? 'freikarten' : 'karten';
@@ -74,6 +77,7 @@ class AuftraegeController extends Controller
             'vorstellungen' => $vorstellungen,
             'kategorien' => $kategorien,
             'vorauswahl' => (int) $request->query('vorstellung'),
+            'frei' => $vorstellungen->mapWithKeys(fn ($v) => [$v->id => $kontingent->frei($v)])->all(),
         ]);
     }
 
@@ -162,21 +166,39 @@ class AuftraegeController extends Controller
     public function etiketten(Kartenauftrag $auftrag, EtikettPdf $pdf): Response
     {
         $tickets = Ticket::with(['vorstellung.veranstaltung', 'kategorie'])->where('kartenauftrag_id', $auftrag->id)
-            ->whereIn('status', $auftrag->status === 'bestaetigt' ? ['erzeugt'] : ['gedruckt', 'ausgegeben'])->orderBy('id')->get();
+            ->whereIn('status', $auftrag->status === 'bestaetigt' ? ['erzeugt'] : ['gedruckt', 'ausgegeben', 'verkauft'])->orderBy('id')->get();
         abort_if($tickets->isEmpty(), 422, 'Keine Karten zum Drucken.');
 
-        return $this->pdfAntwort($pdf->erzeuge($tickets), 'etiketten-auftrag-'.$auftrag->id.'.pdf');
+        // Vorkasse: Adressaufkleber als erstes Etikett (E124).
+        $reservierung = $auftrag->art === 'versand' ? $auftrag->reservierung : null;
+        $absender = $reservierung ? app(Mandantenkontext::class)->mandant()?->name : null;
+
+        return $this->pdfAntwort($pdf->erzeuge($tickets, anschrift: $reservierung?->anschrift(), absender: $absender), 'etiketten-auftrag-'.$auftrag->id.'.pdf');
     }
 
     public function gedruckt(Request $request, Kartenauftrag $auftrag): RedirectResponse
     {
         $anzahl = $this->auftraege->alsGedrucktMarkieren($auftrag, $request->user());
 
-        return back()->with('hinweis', $anzahl.' Karten als gedruckt markiert. Sie können jetzt übergeben werden.');
+        return back()->with('hinweis', $anzahl.' Karten als gedruckt markiert. '.match ($auftrag->art) {
+            'reservierung' => 'Bitte an der Abendkasse hinterlegen.',
+            'versand' => 'Nach dem Versand bitte „Versendet“ wählen.',
+            default => 'Sie können jetzt übergeben werden.',
+        });
     }
 
-    public function uebergeben(Request $request, Kartenauftrag $auftrag): RedirectResponse
+    public function uebergeben(Request $request, Kartenauftrag $auftrag, Reservierungsverwaltung $reservierungen): RedirectResponse
     {
+        if ($auftrag->art === 'versand' && $auftrag->reservierung) {
+            try {
+                $reservierungen->versendet($auftrag->reservierung, $request->user());
+            } catch (InvalidArgumentException $e) {
+                return back()->withErrors(['auftrag' => $e->getMessage()]);
+            }
+
+            return back()->with('hinweis', 'Als versendet vermerkt – die Karten gelten als verkauft (Überweisung).');
+        }
+
         try {
             $anzahl = $this->auftraege->uebergeben($auftrag, $request->user());
         } catch (InvalidArgumentException $e) {

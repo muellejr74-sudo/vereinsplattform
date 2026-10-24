@@ -3,13 +3,14 @@
 @section('titel', $art === 'freikarten' ? 'Freikarten anfordern' : 'Karten bestellen')
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <section class="karte karte--schmal">
         <h1>{{ $art === 'freikarten' ? 'Freikarten anfordern' : 'Karten bestellen' }}</h1>
         @include('kern::teile.fehler')
         @if ($vorstellungen->isEmpty())
             <p>Es gibt keine kommenden Vorstellungen.</p>
         @else
-            <form method="post" action="{{ route('tickets.auftraege.store') }}" class="formular">
+            <form method="post" action="{{ route('tickets.auftraege.store') }}" class="formular" data-frei-aus="#vorstellung_id">
                 @csrf
                 <input type="hidden" name="art" value="{{ $art }}">
 
@@ -20,9 +21,9 @@
                 </select>
 
                 <label for="vorstellung_id">Vorstellung</label>
-                <select id="vorstellung_id" name="vorstellung_id" required onchange="var v = this.selectedOptions[0].dataset.veranstaltung, f = this.form; f.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== v; }); var k = f.querySelector('button[type=submit]'); if (k && f.art.value === 'karten') k.disabled = !!f.querySelector('[data-ohne-kategorien]:not([hidden])');">
+                <select id="vorstellung_id" name="vorstellung_id" required onchange="var v = this.selectedOptions[0].dataset.veranstaltung, f = this.form; f.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== v; }); var k = f.querySelector('button[type=submit]'); if (k && f.art.value === 'karten') k.disabled = !!f.querySelector('[data-ohne-kategorien]:not([hidden])'); this.form.dispatchEvent(new Event('input'));">
                     @foreach ($vorstellungen as $v)
-                        <option value="{{ $v->id }}" data-veranstaltung="{{ $v->veranstaltung_id }}" @selected((int) old('vorstellung_id', $vorauswahl) === $v->id)>{{ $v->veranstaltung->name }} – {{ $v->anzeige() }}</option>
+                        <option value="{{ $v->id }}" data-veranstaltung="{{ $v->veranstaltung_id }}" @if (($frei[$v->id] ?? null) !== null) data-frei="{{ $frei[$v->id] }}" @endif @selected((int) old('vorstellung_id', $vorauswahl) === $v->id)>{{ $v->veranstaltung->name }} – {{ $v->anzeige() }}</option>
                     @endforeach
                 </select>
 
@@ -30,7 +31,7 @@
                     <label for="name">Name auf den Karten</label>
                     <input id="name" name="name" maxlength="80" required value="{{ old('name') }}" placeholder="z. B. Sparkasse oder Familie Meier">
                     <label for="anzahl">Anzahl Freikarten</label>
-                    <input id="anzahl" name="anzahl" type="number" min="1" max="2000" required value="{{ old('anzahl', 1) }}" class="eingabe--kurz">
+                    <input data-menge id="anzahl" name="anzahl" type="number" min="1" max="2000" required value="{{ old('anzahl', 1) }}">
                     <small class="hinweis">Alle Karten bekommen diesen Namen und werden als Stapel nummeriert (z. B. „3/10“). Freikarten zählen zum Kontingent.</small>
                 @else
                     @php
@@ -52,9 +53,9 @@
                             <fieldset class="rechte-gruppe" data-veranstaltung="{{ $veranstaltung->id }}" @if ($veranstaltung->id !== $erste->veranstaltung_id) hidden @endif>
                                 <legend>Anzahl Karten je Kategorie</legend>
                                 @foreach ($liste as $k)
-                                    <div class="formular--zeile" style="margin:0.25rem 0">
-                                        <label for="m{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
-                                        <input id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}" style="flex:0 0 6rem">
+                                    <div class="mengen-zeile">
+                                        <label for="m{{ $k->id }}" >{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
+                                        <input data-menge id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}">
                                     </div>
                                 @endforeach
                             </fieldset>

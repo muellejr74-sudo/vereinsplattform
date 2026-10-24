@@ -31,7 +31,8 @@ class Ticket extends Model
 
     protected $fillable = [
         'nummer', 'pruefzeichen', 'vorstellung_id', 'kategorie_id', 'preis_cent', 'ist_freikarte', 'status', 'name',
-        'stapel_position', 'stapel_groesse', 'kartenauftrag_id', 'verkaufsstelle_id',
+        'stapel_position', 'stapel_groesse', 'kartenauftrag_id', 'verkaufsstelle_id', 'reservierung_id',
+        'zahlungsart', 'verkauft_am', 'verkauft_von', 'verkauf_ueber', 'eingelassen_am', 'eingelassen_durch',
     ];
 
     protected $hidden = ['pruefzeichen'];
@@ -43,6 +44,9 @@ class Ticket extends Model
             'ist_freikarte' => 'boolean',
             'gedruckt_am' => 'datetime',
             'ausgegeben_am' => 'datetime',
+            'verkauft_am' => 'datetime',
+            'eingelassen_am' => 'datetime',
+            'storniert_am' => 'datetime',
         ];
     }
 
@@ -54,6 +58,26 @@ class Ticket extends Model
     public function kategorie(): BelongsTo
     {
         return $this->belongsTo(Ticketkategorie::class);
+    }
+
+    public function kartenauftrag(): BelongsTo
+    {
+        return $this->belongsTo(Kartenauftrag::class);
+    }
+
+    public function reservierung(): BelongsTo
+    {
+        return $this->belongsTo(Reservierung::class);
+    }
+
+    public function verkaufsstelle(): BelongsTo
+    {
+        return $this->belongsTo(Verkaufsstelle::class);
+    }
+
+    public function statusText(): string
+    {
+        return self::STATUS[$this->status] ?? $this->status;
     }
 
     /** Inhalt des QR-Codes: kurzer Link mit Prüfzeichen (E112). */

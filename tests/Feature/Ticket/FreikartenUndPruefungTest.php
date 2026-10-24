@@ -103,5 +103,9 @@ class FreikartenUndPruefungTest extends TicketTestCase
 
         $stelle = $this->im($this->tvm, fn () => Verkaufsstelle::where('art', 'abendkasse')->firstOrFail());
         $this->assertTrue($stelle->istZugeordnet($this->verkaeufer));
+
+        // Auswahl oben, darunter nur die gewählte Stelle bzw. „Neue Verkaufsstelle“.
+        $this->get('/tickets/verkaufsstellen')->assertOk()->assertSee('+ Neue Verkaufsstelle anlegen')->assertDontSee('value="Abendkasse"', false);
+        $this->get('/tickets/verkaufsstellen?stelle='.$stelle->id)->assertSee('value="Abendkasse"', false)->assertDontSee('Anlegen</button>', false);
     }
 }

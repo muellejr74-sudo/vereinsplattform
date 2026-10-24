@@ -4,6 +4,7 @@ namespace App\Modules\Ticket;
 
 use App\Models\User;
 use App\Modules\Ticket\Dienste\TicketZugriff;
+use App\Modules\Ticket\Http\Middleware\AbendkasseGeoeffnet;
 use App\Modules\Ticket\Http\Middleware\TicketmodulAktiv;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +22,7 @@ class TicketServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/Datenbank/Migrationen');
         $this->loadViewsFrom(__DIR__.'/Ansichten', 'ticket');
         $router->aliasMiddleware('ticketmodul', TicketmodulAktiv::class);
+        $router->aliasMiddleware('abendkasse.offen', AbendkasseGeoeffnet::class);
 
         Route::middleware('web')->group(__DIR__.'/routes.php');
 

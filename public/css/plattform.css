@@ -280,3 +280,65 @@ a { color: var(--farbe-primaer); }
 /* Stufe 3: Ticketverwaltung */
 .vorstellungsblock { border-top: 1px solid var(--farbe-rand); padding-top: 0.75rem; margin-top: 0.75rem; }
 .vorstellungsblock h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+
+/* Scanner: Einlass, Stornieren, Abendkasse (Stufe 4a, E119, E122) */
+.scanner video { display: block; width: 100%; max-height: 50vh; object-fit: cover; border-radius: var(--radius); background: #000; margin: 0.5rem 0; }
+.scan-ergebnis { display: flex; flex-direction: column; gap: 0.25rem; padding: 1.25rem 1rem; border-radius: var(--radius); color: #fff; margin: 0.75rem 0; min-height: 5.5rem; justify-content: center; }
+.scan-ergebnis strong { font-size: 1.6rem; line-height: 1.2; }
+.scan-ergebnis span { font-size: 1.05rem; }
+.scan-ergebnis--gruen { background: var(--status-fertig); }
+.scan-ergebnis--gelb { background: #f9a825; color: #1b1b18; }
+.scan-ergebnis--rot { background: var(--status-storniert); }
+.scan-ergebnis--leer { background: var(--farbe-sekundaer); color: var(--farbe-sekundaer-text); }
+.zaehler { font-size: 1.25rem; }
+.zaehler strong { font-size: 1.6rem; }
+.knopf--gross { font-size: 1.15rem; padding: 0.85rem 1.25rem; }
+.knopfzeile--voll { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.knopfzeile--voll .knopf { flex: 1 1 8rem; }
+.summe { font-size: 1.3rem; font-weight: 700; }
+.scanner video[hidden], .scan-ergebnis[hidden] { display: none; }
+a.station-knopf { text-decoration: none; color: var(--farbe-text); }
+
+/* Abendkasse: Startmenü mit großen Knöpfen fürs Handy */
+.menue-knoepfe { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); margin-top: 0.75rem; }
+.menue-knopf { display: flex; flex-direction: column; gap: 0.2rem; padding: 1.1rem 1rem; background: #fff; border: 2px solid var(--farbe-primaer); border-radius: var(--radius); text-decoration: none; color: var(--farbe-text); }
+.menue-knopf strong { font-size: 1.2rem; color: var(--farbe-primaer); }
+.menue-knopf--haupt { background: var(--farbe-primaer); }
+.menue-knopf--haupt strong, .menue-knopf--haupt span { color: var(--farbe-primaer-text); }
+.menue-knopf:focus-visible, .menue-knopf:hover { outline: 3px solid var(--farbe-primaer); outline-offset: 2px; }
+
+/* Mengenfelder mit Plus/Minus (Abendkasse, Reservierungen, Bestellungen) */
+.mengen-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem 0.75rem; margin: 0.5rem 0; }
+.mengen-zeile > label { flex: 1 1 9rem; margin: 0; }
+.menge { display: inline-flex; align-items: stretch; flex: 0 0 auto; }
+.formular .menge input, .menge input { width: 4.25rem; text-align: center; font-size: 1.15rem; border-radius: 0; margin: 0; -moz-appearance: textfield; appearance: textfield; }
+.menge input::-webkit-outer-spin-button, .menge input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.menge__knopf { width: 3rem; min-height: 3rem; font-size: 1.5rem; line-height: 1; border: 1px solid var(--farbe-primaer); background: #fff; color: var(--farbe-primaer); cursor: pointer; padding: 0; }
+.menge__knopf:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.menge__knopf:last-child { border-radius: 0 var(--radius) var(--radius) 0; background: var(--farbe-primaer); color: var(--farbe-primaer-text); }
+.menge__knopf:active { transform: scale(0.96); }
+.menge > input[data-menge] { width: 4.5rem !important; flex: 0 0 4.5rem; }
+.menge > .menge__knopf { flex: 0 0 3rem; }
+.menge__knopf:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Abendkasse: kompakter Kopf (Wunsch des Betreibers) */
+.kasse-kopf { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.kasse-kopf h1 { margin: 0; }
+.symbol-knopf { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border: 1px solid var(--farbe-primaer); border-radius: var(--radius); color: var(--farbe-primaer); background: #fff; flex: 0 0 auto; }
+.kasse-termin { margin: 0.25rem 0 0; color: #555; }
+.kasse-zahlen { display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0.6rem; margin: 0.4rem 0 0.25rem; font-size: 0.9rem; color: #555; white-space: nowrap; }
+.kasse-frei { font-size: 1.15rem; color: var(--farbe-text); }
+.kasse-frei strong { font-size: 1.9rem; margin-left: 0.15rem; }
+.kasse-zahlen span + span::before { content: "· "; }
+
+/* Einlass: Ergebnis bildschirmfüllend, bis „Weiter scannen“ gedrückt wird */
+.scan-vollbild { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 2rem; padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom)); color: #fff; text-align: center; }
+.scan-vollbild[hidden] { display: none; }
+.scan-vollbild__inhalt { display: flex; flex-direction: column; gap: 0.75rem; }
+.scan-vollbild__inhalt strong { font-size: 2.4rem; line-height: 1.15; }
+.scan-vollbild__inhalt span { font-size: 1.25rem; }
+.scan-vollbild__weiter { font: inherit; font-size: 1.3rem; font-weight: 700; padding: 1.1rem; border-radius: var(--radius); border: 3px solid currentColor; background: rgba(255, 255, 255, 0.92); color: #1b1b18; cursor: pointer; }
+.scan-vollbild.scan-ergebnis--gelb { color: #1b1b18; }
+.kasse-zahlen--einfach span + span::before { content: none; }
+.kasse-betrag { font-size: 1.2rem; margin: 0.75rem 0; }
+.kasse-betrag strong { font-size: 2.2rem; margin-left: 0.4rem; }

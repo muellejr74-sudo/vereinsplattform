@@ -119,6 +119,19 @@ class Protokoll
         'ticket.gedruckt' => 'Karten gedruckt',
         'ticket.nachdruck' => 'Karte nachgedruckt',
         'ticket.ausgegeben' => 'Karten übergeben',
+        'ticket.reservierung_angelegt' => 'Reservierung angelegt',
+        'ticket.reservierung_storniert' => 'Reservierung storniert',
+        'ticket.reservierung_umgestellt' => 'Vorkasse auf Abholung umgestellt',
+        'ticket.reservierung_abgeholt' => 'Reservierung an der Abendkasse ausgegeben',
+        'ticket.reservierung_versendet' => 'Karten per Post versendet',
+        'ticket.zahlung_eingegangen' => 'Zahlungseingang vermerkt (Vorkasse)',
+        'ticket.abendkasse_verkauf' => 'Abendkasse: Karten verkauft',
+        'ticket.abendkasse_bestand' => 'Abendkasse: Karte aus Bestand verkauft',
+        'ticket.freikarten_ausgegeben' => 'Freikarten an der Abendkasse ausgegeben',
+        'ticket.storniert' => 'Karten storniert',
+        'ticket.selbstdruck' => 'Karten an der Verkaufsstelle verkauft und gedruckt',
+        'ticket.einstellungen_geaendert' => 'Ticket-Einstellungen geändert',
+        'ticket.bankverbindung_geaendert' => 'Bankverbindung geändert',
     ];
 
     public static function bezeichnung(string $aktion): string
