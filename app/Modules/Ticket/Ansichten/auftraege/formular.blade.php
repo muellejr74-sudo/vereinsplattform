@@ -3,6 +3,7 @@
 @section('titel', $art === 'freikarten' ? 'Freikarten anfordern' : 'Karten bestellen')
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <section class="karte karte--schmal">
         <h1>{{ $art === 'freikarten' ? 'Freikarten anfordern' : 'Karten bestellen' }}</h1>
         @include('kern::teile.fehler')
@@ -30,7 +31,7 @@
                     <label for="name">Name auf den Karten</label>
                     <input id="name" name="name" maxlength="80" required value="{{ old('name') }}" placeholder="z. B. Sparkasse oder Familie Meier">
                     <label for="anzahl">Anzahl Freikarten</label>
-                    <input id="anzahl" name="anzahl" type="number" min="1" max="2000" required value="{{ old('anzahl', 1) }}" class="eingabe--kurz">
+                    <input data-menge id="anzahl" name="anzahl" type="number" min="1" max="2000" required value="{{ old('anzahl', 1) }}">
                     <small class="hinweis">Alle Karten bekommen diesen Namen und werden als Stapel nummeriert (z. B. „3/10“). Freikarten zählen zum Kontingent.</small>
                 @else
                     @php
@@ -52,9 +53,9 @@
                             <fieldset class="rechte-gruppe" data-veranstaltung="{{ $veranstaltung->id }}" @if ($veranstaltung->id !== $erste->veranstaltung_id) hidden @endif>
                                 <legend>Anzahl Karten je Kategorie</legend>
                                 @foreach ($liste as $k)
-                                    <div class="formular--zeile" style="margin:0.25rem 0">
-                                        <label for="m{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
-                                        <input id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}" style="flex:0 0 6rem">
+                                    <div class="mengen-zeile">
+                                        <label for="m{{ $k->id }}" >{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
+                                        <input data-menge id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="2000" value="{{ old('mengen.'.$k->id, 0) }}">
                                     </div>
                                 @endforeach
                             </fieldset>

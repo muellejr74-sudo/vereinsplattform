@@ -3,6 +3,7 @@
 @section('titel', 'Auftrag #'.$auftrag->id)
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <div class="titelzeile">
         <h1>Auftrag #{{ $auftrag->id }}</h1>
         <a class="knopf knopf--zweit" href="{{ route('tickets.auftraege.index') }}">Alle Aufträge</a>
@@ -31,9 +32,9 @@
             <form method="post" action="{{ route('tickets.auftraege.bestaetigen', $auftrag) }}" class="formular">
                 @csrf
                 @foreach ($auftrag->positionen as $p)
-                    <div class="formular--zeile" style="margin:0.25rem 0">
-                        <label for="b{{ $p->id }}" style="flex:1">{{ $p->kategorie->name }} <span class="hinweis">(angefordert: {{ $p->anzahl }})</span></label>
-                        <input id="b{{ $p->id }}" name="mengen[{{ $p->id }}]" type="number" min="0" max="2000" value="{{ $p->anzahl }}" style="flex:0 0 6rem">
+                    <div class="mengen-zeile">
+                        <label for="b{{ $p->id }}" >{{ $p->kategorie->name }} <span class="hinweis">(angefordert: {{ $p->anzahl }})</span></label>
+                        <input data-menge id="b{{ $p->id }}" name="mengen[{{ $p->id }}]" type="number" min="0" max="2000" value="{{ $p->anzahl }}">
                     </div>
                 @endforeach
                 <small class="hinweis">Menge bei Bedarf anpassen. Mit der Bestätigung werden die Ticketnummern vergeben und die Plätze belegt.</small>

@@ -306,3 +306,16 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .menue-knopf--haupt { background: var(--farbe-primaer); }
 .menue-knopf--haupt strong, .menue-knopf--haupt span { color: var(--farbe-primaer-text); }
 .menue-knopf:focus-visible, .menue-knopf:hover { outline: 3px solid var(--farbe-primaer); outline-offset: 2px; }
+
+/* Mengenfelder mit Plus/Minus (Abendkasse, Reservierungen, Bestellungen) */
+.mengen-zeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem 0.75rem; margin: 0.5rem 0; }
+.mengen-zeile > label { flex: 1 1 9rem; margin: 0; }
+.menge { display: inline-flex; align-items: stretch; flex: 0 0 auto; }
+.formular .menge input, .menge input { width: 4.25rem; text-align: center; font-size: 1.15rem; border-radius: 0; margin: 0; -moz-appearance: textfield; appearance: textfield; }
+.menge input::-webkit-outer-spin-button, .menge input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.menge__knopf { width: 3rem; min-height: 3rem; font-size: 1.5rem; line-height: 1; border: 1px solid var(--farbe-primaer); background: #fff; color: var(--farbe-primaer); cursor: pointer; padding: 0; }
+.menge__knopf:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.menge__knopf:last-child { border-radius: 0 var(--radius) var(--radius) 0; background: var(--farbe-primaer); color: var(--farbe-primaer-text); }
+.menge__knopf:active { transform: scale(0.96); }
+.menge > input[data-menge] { width: 4.5rem !important; flex: 0 0 4.5rem; }
+.menge > .menge__knopf { flex: 0 0 3rem; }

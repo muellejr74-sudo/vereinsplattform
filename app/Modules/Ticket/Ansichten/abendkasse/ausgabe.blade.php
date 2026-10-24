@@ -5,6 +5,7 @@
 @php $geld = fn ($c) => \App\Modules\Ticket\Dienste\Geld::anzeigen($c); @endphp
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <section class="karte karte--schmal">
         <h1>{{ $r->name }}</h1>
         <p class="hinweis">{{ $r->kennung() }} · {{ $v->veranstaltung->name }}, {{ $v->anzeige() }} · {{ $r->statusText() }}</p>
@@ -18,9 +19,9 @@
               oninput="var s = 0; this.querySelectorAll('[data-preis]').forEach(function (e) { s += (parseInt(e.value, 10) || 0) * parseInt(e.dataset.preis, 10); }); document.getElementById('summe').textContent = (s / 100).toFixed(2).replace('.', ',') + ' €';">
             @csrf
             @foreach ($r->positionen as $p)
-                <div class="formular--zeile" style="margin:0.25rem 0">
-                    <label for="p{{ $p->id }}" style="flex:1">{{ $p->kategorie->name }} <span class="hinweis">{{ $geld($p->preis_cent) }} · reserviert: {{ $p->anzahl }}</span></label>
-                    <input id="p{{ $p->id }}" name="mengen[{{ $p->id }}]" type="number" min="0" max="{{ $p->anzahl }}" value="{{ $p->anzahl }}" data-preis="{{ $p->preis_cent }}" style="flex:0 0 6rem" inputmode="numeric">
+                <div class="mengen-zeile">
+                    <label for="p{{ $p->id }}" >{{ $p->kategorie->name }} <span class="hinweis">{{ $geld($p->preis_cent) }} · reserviert: {{ $p->anzahl }}</span></label>
+                    <input data-menge id="p{{ $p->id }}" name="mengen[{{ $p->id }}]" type="number" min="0" max="{{ $p->anzahl }}" value="{{ $p->anzahl }}" data-preis="{{ $p->preis_cent }}" inputmode="numeric">
                 </div>
             @endforeach
             <p>Zu zahlen: <span class="summe" id="summe">{{ $geld($r->betragCent()) }}</span></p>

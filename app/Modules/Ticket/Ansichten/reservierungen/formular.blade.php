@@ -3,6 +3,7 @@
 @section('titel', 'Reservierung anlegen')
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <section class="karte karte--schmal">
         <h1>Reservierung anlegen</h1>
         @include('kern::teile.fehler')
@@ -36,9 +37,9 @@
                         <fieldset class="rechte-gruppe" data-veranstaltung="{{ $veranstaltung->id }}" @unless ($sichtbar) hidden @endunless>
                             <legend>Anzahl Karten je Kategorie</legend>
                             @foreach ($liste as $k)
-                                <div class="formular--zeile" style="margin:0.25rem 0">
-                                    <label for="m{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
-                                    <input id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="500" value="{{ old('mengen.'.$k->id, 0) }}" style="flex:0 0 6rem" @unless ($sichtbar) disabled @endunless>
+                                <div class="mengen-zeile">
+                                    <label for="m{{ $k->id }}" >{{ $k->name }} <span class="hinweis">{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($k->preis_cent) }}</span></label>
+                                    <input data-menge id="m{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="500" value="{{ old('mengen.'.$k->id, 0) }}" @unless ($sichtbar) disabled @endunless>
                                 </div>
                             @endforeach
                         </fieldset>

@@ -5,6 +5,7 @@
 @php $geld = fn ($c) => \App\Modules\Ticket\Dienste\Geld::anzeigen($c); @endphp
 
 @section('inhalt')
+    @include('ticket::teile.mengen')
     <section class="karte karte--schmal">
         @include('ticket::abendkasse.kopf', ['titel' => 'Karten verkaufen'])
         <p class="zaehler">Frei: <strong>{{ $zahlen['frei'] ?? '–' }}</strong></p>
@@ -15,9 +16,9 @@
                   oninput="var s = 0; this.querySelectorAll('[data-preis]').forEach(function (e) { s += (parseInt(e.value, 10) || 0) * parseInt(e.dataset.preis, 10); }); document.getElementById('verkauf-summe').textContent = (s / 100).toFixed(2).replace('.', ',') + ' €';">
                 @csrf
                 @foreach ($kategorien as $k)
-                    <div class="formular--zeile" style="margin:0.25rem 0">
-                        <label for="vk{{ $k->id }}" style="flex:1">{{ $k->name }} <span class="hinweis">{{ $geld($k->preisFuer($v->id)) }}</span></label>
-                        <input id="vk{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="200" value="{{ old('mengen.'.$k->id, 0) }}" data-preis="{{ $k->preisFuer($v->id) }}" style="flex:0 0 6rem" inputmode="numeric">
+                    <div class="mengen-zeile">
+                        <label for="vk{{ $k->id }}" >{{ $k->name }} <span class="hinweis">{{ $geld($k->preisFuer($v->id)) }}</span></label>
+                        <input data-menge id="vk{{ $k->id }}" name="mengen[{{ $k->id }}]" type="number" min="0" max="200" value="{{ old('mengen.'.$k->id, 0) }}" data-preis="{{ $k->preisFuer($v->id) }}" inputmode="numeric">
                     </div>
                 @endforeach
                 <p>Zu zahlen: <span class="summe" id="verkauf-summe">0,00 €</span></p>
