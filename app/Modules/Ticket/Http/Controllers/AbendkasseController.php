@@ -36,18 +36,56 @@ class AbendkasseController extends Controller
         return view('ticket::abendkasse.index', ['vorstellungen' => $vorstellungen->take(20)]);
     }
 
-    public function show(Request $request, Vorstellung $vorstellung, Kontingent $kontingent): View
+    /** Startmenü der Abendkasse: große Knöpfe, je Aufgabe eine eigene Seite (Wunsch des Betreibers bei der Abnahme). */
+    public function show(Vorstellung $vorstellung, Kontingent $kontingent): View
     {
-        $suche = trim((string) $request->query('suche', ''));
         $ab = $this->kasse->nichtAbgeholtAb($vorstellung);
 
-        return view('ticket::abendkasse.show', [
+        return view('ticket::abendkasse.menue', [
+            'v' => $vorstellung->load('veranstaltung'),
+            'zahlen' => $kontingent->uebersicht($vorstellung),
+            'offen' => $this->kasse->offeneReservierungen($vorstellung)->count(),
+            'freikarten' => $this->kasse->hinterlegteFreikarten($vorstellung)->count(),
+            'nichtAbgeholtAb' => $ab,
+        ]);
+    }
+
+    public function verkaufFormular(Vorstellung $vorstellung, Kontingent $kontingent): View
+    {
+        return view('ticket::abendkasse.verkauf', [
             'v' => $vorstellung->load('veranstaltung'),
             'zahlen' => $kontingent->uebersicht($vorstellung),
             'kategorien' => Ticketkategorie::where('veranstaltung_id', $vorstellung->veranstaltung_id)->where('ist_freikarte', false)->orderBy('reihenfolge')->get(),
+        ]);
+    }
+
+    public function reservierungen(Request $request, Vorstellung $vorstellung): View
+    {
+        $suche = trim((string) $request->query('suche', ''));
+
+        return view('ticket::abendkasse.reservierungen', [
+            'v' => $vorstellung->load('veranstaltung'),
             'reservierungen' => $this->kasse->offeneReservierungen($vorstellung, $suche),
             'suche' => $suche,
-            'freikarten' => $this->kasse->hinterlegteFreikarten($vorstellung),
+        ]);
+    }
+
+    public function bestandFormular(Vorstellung $vorstellung): View
+    {
+        return view('ticket::abendkasse.bestand-scan', ['v' => $vorstellung->load('veranstaltung')]);
+    }
+
+    public function freikartenListe(Vorstellung $vorstellung): View
+    {
+        return view('ticket::abendkasse.freikarten', ['v' => $vorstellung->load('veranstaltung'), 'freikarten' => $this->kasse->hinterlegteFreikarten($vorstellung)]);
+    }
+
+    public function nichtAbgeholtListe(Vorstellung $vorstellung): View
+    {
+        $ab = $this->kasse->nichtAbgeholtAb($vorstellung);
+
+        return view('ticket::abendkasse.nicht-abgeholt', [
+            'v' => $vorstellung->load('veranstaltung'),
             'nichtAbgeholtAb' => $ab,
             'nichtAbgeholt' => now()->gte($ab) ? $this->kasse->offeneReservierungen($vorstellung) : collect(),
         ]);
@@ -66,7 +104,7 @@ class AbendkasseController extends Controller
             return back()->withInput()->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return back()->with('hinweis', $ergebnis['anzahl'].' Karten verkauft · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).' · Gäste gelten als eingelassen.');
+        return $this->menue($vorstellung)->with('hinweis', $ergebnis['anzahl'].' Karten verkauft · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).' · Gäste gelten als eingelassen.');
     }
 
     public function reservierung(Vorstellung $vorstellung, Reservierung $reservierung): View
@@ -91,7 +129,7 @@ class AbendkasseController extends Controller
             return back()->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return redirect()->route('tickets.abendkasse.show', $vorstellung)->with('hinweis',
+        return $this->menue($vorstellung)->with('hinweis',
             $reservierung->name.': '.$ergebnis['anzahl'].' Karten ausgegeben · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).'.');
     }
 
@@ -113,7 +151,7 @@ class AbendkasseController extends Controller
     public function bestand(Vorstellung $vorstellung, Ticket $ticket): View|RedirectResponse
     {
         if ($fehler = $this->kasse->bestandPruefen($vorstellung, $ticket)) {
-            return redirect()->route('tickets.abendkasse.show', $vorstellung)->withErrors(['kasse' => $ticket->nummer.': '.$fehler]);
+            return redirect()->route('tickets.abendkasse.bestand.scan', $vorstellung)->withErrors(['kasse' => $ticket->nummer.': '.$fehler]);
         }
 
         return view('ticket::abendkasse.bestand', ['v' => $vorstellung->load('veranstaltung'), 't' => $ticket->load('kategorie')]);
@@ -125,10 +163,10 @@ class AbendkasseController extends Controller
         try {
             $this->kasse->bestandVerkaufen($vorstellung, $ticket, $daten['zahlungsart'], $request->user());
         } catch (InvalidArgumentException $e) {
-            return redirect()->route('tickets.abendkasse.show', $vorstellung)->withErrors(['kasse' => $e->getMessage()]);
+            return redirect()->route('tickets.abendkasse.bestand.scan', $vorstellung)->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return redirect()->route('tickets.abendkasse.show', $vorstellung)
+        return $this->menue($vorstellung)
             ->with('hinweis', 'Karte '.$ticket->nummer.' verkauft · '.Geld::anzeigen($ticket->preis_cent).' '.$this->zahlText($daten['zahlungsart']).'.');
     }
 
@@ -142,7 +180,7 @@ class AbendkasseController extends Controller
             return back()->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return back()->with('hinweis', 'Freikarten „'.$auftrag->name.'“: '.$anzahl.' ausgegeben.');
+        return $this->menue($vorstellung)->with('hinweis', 'Freikarten „'.$auftrag->name.'“: '.$anzahl.' ausgegeben.');
     }
 
     /** Nicht abgeholte Reservierungen halbautomatisch stornieren (E41, E121). */
@@ -159,7 +197,12 @@ class AbendkasseController extends Controller
             $anzahl++;
         }
 
-        return back()->with('hinweis', $anzahl.' nicht abgeholte Reservierungen storniert – die Plätze sind wieder frei.');
+        return $this->menue($vorstellung)->with('hinweis', $anzahl.' nicht abgeholte Reservierungen storniert – die Plätze sind wieder frei.');
+    }
+
+    private function menue(Vorstellung $vorstellung): RedirectResponse
+    {
+        return redirect()->route('tickets.abendkasse.show', $vorstellung);
     }
 
     private function zahlText(string $art): string

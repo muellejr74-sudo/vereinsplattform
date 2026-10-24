@@ -80,14 +80,19 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
     Route::middleware('can:ticket.abendkasse')->prefix('abendkasse')->name('abendkasse.')->group(function () {
         Route::get('/', [AbendkasseController::class, 'index'])->name('index');
         Route::get('{vorstellung}', [AbendkasseController::class, 'show'])->whereNumber('vorstellung')->name('show');
-        Route::post('{vorstellung}/verkauf', [AbendkasseController::class, 'verkauf'])->whereNumber('vorstellung')->name('verkauf');
+        Route::get('{vorstellung}/verkauf', [AbendkasseController::class, 'verkaufFormular'])->whereNumber('vorstellung')->name('verkauf');
+        Route::post('{vorstellung}/verkauf', [AbendkasseController::class, 'verkauf'])->whereNumber('vorstellung');
+        Route::get('{vorstellung}/reservierungen', [AbendkasseController::class, 'reservierungen'])->whereNumber('vorstellung')->name('reservierungen');
         Route::get('{vorstellung}/reservierungen/{reservierung}', [AbendkasseController::class, 'reservierung'])->whereNumber(['vorstellung', 'reservierung'])->name('reservierung');
         Route::post('{vorstellung}/reservierungen/{reservierung}', [AbendkasseController::class, 'ausgeben'])->whereNumber(['vorstellung', 'reservierung']);
-        Route::post('{vorstellung}/bestand', [AbendkasseController::class, 'bestandScan'])->whereNumber('vorstellung')->name('bestand.scan');
+        Route::get('{vorstellung}/bestand', [AbendkasseController::class, 'bestandFormular'])->whereNumber('vorstellung')->name('bestand.scan');
+        Route::post('{vorstellung}/bestand', [AbendkasseController::class, 'bestandScan'])->whereNumber('vorstellung');
         Route::get('{vorstellung}/bestand/{ticket}', [AbendkasseController::class, 'bestand'])->whereNumber(['vorstellung', 'ticket'])->name('bestand');
         Route::post('{vorstellung}/bestand/{ticket}', [AbendkasseController::class, 'bestandVerkaufen'])->whereNumber(['vorstellung', 'ticket']);
+        Route::get('{vorstellung}/freikarten', [AbendkasseController::class, 'freikartenListe'])->whereNumber('vorstellung')->name('freikarten.liste');
         Route::post('{vorstellung}/freikarten/{auftrag}', [AbendkasseController::class, 'freikarten'])->whereNumber(['vorstellung', 'auftrag'])->name('freikarten');
-        Route::post('{vorstellung}/nicht-abgeholt', [AbendkasseController::class, 'nichtAbgeholt'])->whereNumber('vorstellung')->name('nicht_abgeholt');
+        Route::get('{vorstellung}/nicht-abgeholt', [AbendkasseController::class, 'nichtAbgeholtListe'])->whereNumber('vorstellung')->name('nicht_abgeholt');
+        Route::post('{vorstellung}/nicht-abgeholt', [AbendkasseController::class, 'nichtAbgeholt'])->whereNumber('vorstellung');
     });
 
     // Stornieren einzeln und per Dauer-Scan (E1, E4b, E119)

@@ -62,7 +62,8 @@ class AbendTest extends TicketTestCase
     {
         $this->amAbend();
         $this->als($this->kasse)->get('/tickets/abendkasse')->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id);
-        $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf', ['mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1], 'zahlungsart' => 'bar'])
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf')->assertOk()->assertSee('Bar bezahlt');
+        $this->from('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf')->post('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf', ['mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1], 'zahlungsart' => 'bar'])
             ->assertSessionHasNoErrors();
         $this->assertStringContainsString('30,00 € bar', session('hinweis'));
 
@@ -84,9 +85,11 @@ class AbendTest extends TicketTestCase
         $this->amAbend();
 
         // Meier (digital) holt ab und zahlt bar → Karten entstehen, sofort eingelassen (E123).
-        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id.'?suche=meie')->assertSee('Meier')->assertDontSee('Liederkranz');
+        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('Karten direkt verkaufen')->assertSee('2 offen');
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen?suche=meie')->assertSee('Meier')->assertDontSee('Liederkranz');
         $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen/'.$meier->id)->assertOk()->assertSee('48,00 €');
-        $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen/'.$meier->id, ['zahlungsart' => 'bar'])->assertSessionHasNoErrors();
+        $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen/'.$meier->id, ['zahlungsart' => 'bar'])
+            ->assertSessionHasNoErrors()->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id); // zurück ins Menü
         $meierKarten = $this->im($this->tvm, fn () => Ticket::where('reservierung_id', $meier->id)->get());
         $this->assertCount(4, $meierKarten);
         $this->assertTrue($meierKarten->every(fn ($t) => $t->status === 'eingelassen' && $t->zahlungsart === 'bar'));
@@ -114,12 +117,13 @@ class AbendTest extends TicketTestCase
         $lk = $this->reservieren([$this->erwachsene->id => 3], 'gedruckt', 'Bleibt offen');
 
         $this->travelTo(Carbon::parse('2026-12-01 19:00'));
-        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('Erscheinen ab 19:30 Uhr');
+        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('ab 19:30 Uhr');
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/nicht-abgeholt')->assertSee('erscheint ab <strong>19:30 Uhr</strong>', false);
         $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/nicht-abgeholt', ['ids' => [$schulz->id]])->assertSessionHasErrors('kasse');
         $this->assertSame('offen', $schulz->fresh()->status);
 
         $this->travelTo(Carbon::parse('2026-12-01 19:31'));
-        $this->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('Schulz – 2 Karten');
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/nicht-abgeholt')->assertSee('Schulz – 2 Karten');
         $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/nicht-abgeholt', ['ids' => [$schulz->id]])->assertSessionHasNoErrors();
 
         $this->assertSame('storniert', $schulz->fresh()->status);
@@ -165,7 +169,8 @@ class AbendTest extends TicketTestCase
         $this->post('/tickets/auftraege/'.$a->id.'/gedruckt');
 
         $this->amAbend();
-        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('Sparkasse');
+        $this->als($this->kasse)->get('/tickets/abendkasse/'.$this->vorstellung->id)->assertSee('Freikarten ausgeben');
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/freikarten')->assertSee('Sparkasse');
         $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/freikarten/'.$a->id, ['anzahl' => 3])->assertSessionHasNoErrors();
 
         $t = $this->tickets();

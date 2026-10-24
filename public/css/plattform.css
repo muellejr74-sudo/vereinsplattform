@@ -298,3 +298,11 @@ a { color: var(--farbe-primaer); }
 .summe { font-size: 1.3rem; font-weight: 700; }
 .scanner video[hidden], .scan-ergebnis[hidden] { display: none; }
 a.station-knopf { text-decoration: none; color: var(--farbe-text); }
+
+/* Abendkasse: Startmenü mit großen Knöpfen fürs Handy */
+.menue-knoepfe { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); margin-top: 0.75rem; }
+.menue-knopf { display: flex; flex-direction: column; gap: 0.2rem; padding: 1.1rem 1rem; background: #fff; border: 2px solid var(--farbe-primaer); border-radius: var(--radius); text-decoration: none; color: var(--farbe-text); }
+.menue-knopf strong { font-size: 1.2rem; color: var(--farbe-primaer); }
+.menue-knopf--haupt { background: var(--farbe-primaer); }
+.menue-knopf--haupt strong, .menue-knopf--haupt span { color: var(--farbe-primaer-text); }
+.menue-knopf:focus-visible, .menue-knopf:hover { outline: 3px solid var(--farbe-primaer); outline-offset: 2px; }

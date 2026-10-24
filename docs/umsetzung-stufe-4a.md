@@ -19,6 +19,7 @@ Freigegeben am 24.10.2026 (P-5.4). Fachliche Grundlage: E1, E4b, E40–E46a, E11
 | T4a-11 | **Einlass** gültig für gedruckte, ausgegebene und verkaufte Karten der angemeldeten Vorstellung. Gleichzeitige Scans derselben Karte: nur einer wird grün. Am Einlass werden **keine Namen** angezeigt. Einzelne Scans werden nicht ins Protokoll geschrieben – Zeitpunkt und Station stehen an der Karte. | E122; das Protokoll bleibt lesbar. |
 | T4a-12 | Abendkasse-Verkauf und abgeholte digitale Reservierungen bekommen Ticketnummern (ohne Etikett) und gelten sofort als eingelassen. Teilabholung: Übrige Plätze werden frei, übrige hinterlegte Karten storniert. | E44, E114a, E123; die Zahlen für 4b stimmen. |
 | T4a-13 | Hinterlegte **Freikarten-Stapel des Vereins** können an der Abendkasse ausgegeben werden (auch teilweise). | E114. |
+| T4a-15 | **Abendkasse mit Startmenü** (Wunsch bei der Abnahme, 24.10.2026): große Knöpfe „Karten direkt verkaufen“, „Reservierung abholen“, „Gedruckte Karte verkaufen“, „Freikarten ausgeben“ (nur wenn vorhanden), „Nicht abgeholte Reservierungen“. Jede Aufgabe hat eine eigene kurze Seite; nach jedem Vorgang geht es zurück ins Menü. | Am Handy schneller, kein Scrollen. |
 | T4a-14 | Rechte: „Abendkasse“ und „Stornieren“ aktiv; **neues sensibles Recht „Zahlungseingang vermerken“** (E125). „Auswertungen“ und „Abschluss“ folgen mit Stufe 4b. | |
 
 ## Ehrlicher Hinweis zu den Tests

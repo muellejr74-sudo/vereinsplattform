@@ -31,6 +31,6 @@
                 <button type="submit" name="zahlungsart" value="karte" class="knopf knopf--gross knopf--zweit">Mit Karte bezahlt</button>
             </div>
         </form>
-        <p style="margin-top:1rem"><a href="{{ route('tickets.abendkasse.show', $v) }}">Zurück zur Abendkasse</a></p>
+        <p style="margin-top:1rem"><a href="{{ route('tickets.abendkasse.reservierungen', $v) }}">Andere Reservierung</a> · <a href="{{ route('tickets.abendkasse.show', $v) }}">Menü</a></p>
     </section>
 @endsection

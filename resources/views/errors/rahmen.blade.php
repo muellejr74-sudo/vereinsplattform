@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('titel') – {{ config('app.name') }}</title>
-    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=6">
+    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=7">
 </head>
 <body>
     <header class="kopfzeile"><div class="kopfzeile__inhalt"><a class="logo" href="{{ url('/') }}">{{ config('app.name') }}</a></div></header>
