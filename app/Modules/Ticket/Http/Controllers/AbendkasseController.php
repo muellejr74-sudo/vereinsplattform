@@ -110,7 +110,8 @@ class AbendkasseController extends Controller
             return back()->withInput()->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return $this->menue($vorstellung)->with('hinweis', $ergebnis['anzahl'].' Karten verkauft · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).' · Gäste gelten als eingelassen.');
+        return $this->nachZahlung($vorstellung, $daten['zahlungsart'], $ergebnis['betrag_cent'],
+            $this->karten($ergebnis['anzahl']).' verkauft · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).' · Gäste gelten als eingelassen.');
     }
 
     public function reservierung(Vorstellung $vorstellung, Reservierung $reservierung): View
@@ -135,8 +136,8 @@ class AbendkasseController extends Controller
             return back()->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return $this->menue($vorstellung)->with('hinweis',
-            $reservierung->name.': '.$ergebnis['anzahl'].' Karten ausgegeben · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).'.');
+        return $this->nachZahlung($vorstellung, $daten['zahlungsart'], $ergebnis['betrag_cent'],
+            $reservierung->name.': '.$this->karten($ergebnis['anzahl']).' ausgegeben · '.Geld::anzeigen($ergebnis['betrag_cent']).' '.$this->zahlText($daten['zahlungsart']).'.');
     }
 
     /** Karte aus dem gedruckten Bestand der Abendkasse scannen (E46a). */
@@ -172,8 +173,8 @@ class AbendkasseController extends Controller
             return redirect()->route('tickets.abendkasse.bestand.scan', $vorstellung)->withErrors(['kasse' => $e->getMessage()]);
         }
 
-        return $this->menue($vorstellung)
-            ->with('hinweis', 'Karte '.$ticket->nummer.' verkauft · '.Geld::anzeigen($ticket->preis_cent).' '.$this->zahlText($daten['zahlungsart']).'.');
+        return $this->nachZahlung($vorstellung, $daten['zahlungsart'], $ticket->preis_cent,
+            'Karte '.$ticket->nummer.' verkauft · '.Geld::anzeigen($ticket->preis_cent).' '.$this->zahlText($daten['zahlungsart']).'.');
     }
 
     public function freikarten(Request $request, Vorstellung $vorstellung, Kartenauftrag $auftrag): RedirectResponse
@@ -230,9 +231,35 @@ class AbendkasseController extends Controller
         return redirect()->route('tickets.abendkasse.einlass', $vorstellung)->with('scan', $ergebnis);
     }
 
+    /** Rückgeld-Anzeige nach Barzahlung (Wunsch des Betreibers); nur Anzeige, nichts wird gespeichert. */
+    public function kassieren(Vorstellung $vorstellung): View|RedirectResponse
+    {
+        $daten = session('kassieren');
+        if (! is_array($daten)) {
+            return $this->menue($vorstellung);
+        }
+
+        return view('ticket::abendkasse.kassieren', ['v' => $vorstellung->load('veranstaltung'), 'betrag' => (int) $daten['betrag'], 'text' => $daten['text']]);
+    }
+
+    /** Bar: weiter zum Kassieren mit Rückgeld; Karte: zurück ins Menü. */
+    private function nachZahlung(Vorstellung $vorstellung, string $zahlungsart, int $betrag, string $text): RedirectResponse
+    {
+        if ($zahlungsart === 'bar' && $betrag > 0) {
+            return redirect()->route('tickets.abendkasse.kassieren', $vorstellung)->with('kassieren', ['betrag' => $betrag, 'text' => $text]);
+        }
+
+        return $this->menue($vorstellung)->with('hinweis', $text);
+    }
+
     private function menue(Vorstellung $vorstellung): RedirectResponse
     {
         return redirect()->route('tickets.abendkasse.show', $vorstellung);
+    }
+
+    private function karten(int $anzahl): string
+    {
+        return $anzahl.' '.($anzahl === 1 ? 'Karte' : 'Karten');
     }
 
     private function zahlText(string $art): string

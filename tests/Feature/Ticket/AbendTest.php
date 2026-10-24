@@ -81,8 +81,10 @@ class AbendTest extends TicketTestCase
         $this->als($this->kasse)->get('/tickets/abendkasse')->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id);
         $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf')->assertOk()->assertSee('Bar bezahlt');
         $this->from('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf')->post('/tickets/abendkasse/'.$this->vorstellung->id.'/verkauf', ['mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1], 'zahlungsart' => 'bar'])
-            ->assertSessionHasNoErrors();
-        $this->assertStringContainsString('30,00 € bar', session('hinweis'));
+            ->assertSessionHasNoErrors()->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id.'/kassieren');
+        $this->assertSame(3000, session('kassieren')['betrag']);
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/kassieren')->assertOk()->assertSee('Zu zahlen')->assertSee('data-betrag="3000"', false)->assertSee('Rückgeld');
+        $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/kassieren')->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id); // nach dem Abschluss: Menü
 
         $t = $this->tickets();
         $this->assertCount(3, $t);
@@ -106,7 +108,7 @@ class AbendTest extends TicketTestCase
         $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen?suche=meie')->assertSee('Meier')->assertDontSee('Liederkranz');
         $this->get('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen/'.$meier->id)->assertOk()->assertSee('48,00 €');
         $this->post('/tickets/abendkasse/'.$this->vorstellung->id.'/reservierungen/'.$meier->id, ['zahlungsart' => 'bar'])
-            ->assertSessionHasNoErrors()->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id); // zurück ins Menü
+            ->assertSessionHasNoErrors()->assertRedirect('/tickets/abendkasse/'.$this->vorstellung->id.'/kassieren'); // bar: Rückgeld
         $meierKarten = $this->im($this->tvm, fn () => Ticket::where('reservierung_id', $meier->id)->get());
         $this->assertCount(4, $meierKarten);
         $this->assertTrue($meierKarten->every(fn ($t) => $t->status === 'eingelassen' && $t->zahlungsart === 'bar'));

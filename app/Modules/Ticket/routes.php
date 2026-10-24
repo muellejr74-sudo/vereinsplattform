@@ -102,6 +102,7 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
         Route::post('{vorstellung}/bestand/{ticket}', [AbendkasseController::class, 'bestandVerkaufen'])->whereNumber(['vorstellung', 'ticket']);
         Route::get('{vorstellung}/freikarten', [AbendkasseController::class, 'freikartenListe'])->whereNumber('vorstellung')->name('freikarten.liste');
         Route::post('{vorstellung}/freikarten/{auftrag}', [AbendkasseController::class, 'freikarten'])->whereNumber(['vorstellung', 'auftrag'])->name('freikarten');
+        Route::get('{vorstellung}/kassieren', [AbendkasseController::class, 'kassieren'])->whereNumber('vorstellung')->name('kassieren');
         Route::get('{vorstellung}/einlass', [AbendkasseController::class, 'einlass'])->whereNumber('vorstellung')->name('einlass');
         Route::post('{vorstellung}/einlass', [AbendkasseController::class, 'einlassScannen'])->whereNumber('vorstellung')->middleware('throttle:180,1');
         Route::get('{vorstellung}/nicht-abgeholt', [AbendkasseController::class, 'nichtAbgeholtListe'])->whereNumber('vorstellung')->name('nicht_abgeholt');
