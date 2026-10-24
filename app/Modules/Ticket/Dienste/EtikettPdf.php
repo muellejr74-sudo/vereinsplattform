@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Modules\Ticket\Dienste;
+
+use App\Modules\Ticket\Models\Ticket;
+use BaconQrCode\Common\ErrorCorrectionLevel;
+use BaconQrCode\Encoder\Encoder;
+use FPDF;
+use Illuminate\Support\Collection;
+
+/**
+ * Ticket-Etiketten als PDF – eine Seite je Etikett (E111) für den Labelident BP4X
+ * mit 101,6 × 38,1 mm (E110). Inhalt nach E77, Stapelposition nach E114b.
+ * Nur Schwarz (Thermodirekt), kein Logo.
+ */
+class EtikettPdf
+{
+    public const BREITE = 101.6;
+
+    public const HOEHE = 38.1;
+
+    /**
+     * @param  Collection<int, Ticket>  $tickets
+     */
+    public function erzeuge(Collection $tickets, float $breite = self::BREITE, float $hoehe = self::HOEHE): string
+    {
+        $pdf = new FPDF($breite >= $hoehe ? 'L' : 'P', 'mm', [min($breite, $hoehe), max($breite, $hoehe)]);
+        $pdf->SetAutoPageBreak(false);
+        $pdf->SetMargins(0, 0, 0);
+        $pdf->SetCreator('Vereinsplattform');
+        $pdf->SetTitle('Eintrittskarten');
+
+        foreach ($tickets as $ticket) {
+            $pdf->AddPage();
+            $this->etikett($pdf, $ticket, $breite, $hoehe);
+        }
+
+        return $pdf->Output('S');
+    }
+
+    private function etikett(FPDF $pdf, Ticket $ticket, float $b, float $h): void
+    {
+        $rand = 2.5;
+        $qr = $h - 2 * $rand;                       // QR-Code rechts, volle Höhe
+        $qrX = $b - $rand - $qr;
+        $this->qr($pdf, $ticket->qrInhalt(), $qrX, $rand, $qr);
+
+        $textBreite = $qrX - $rand - 2;
+        $x = $rand + 0.5;
+        $y = $rand + 0.5;
+        $vorstellung = $ticket->vorstellung;
+        $veranstaltung = $vorstellung->veranstaltung;
+
+        $pdf->SetTextColor(0, 0, 0);
+
+        // 1. Kurzer Veranstaltungsname
+        $pdf->SetFont('Helvetica', 'B', 10.5);
+        $pdf->SetXY($x, $y);
+        $pdf->Cell($textBreite, 5, $this->kuerzen($pdf, $veranstaltung->kurzname ?: $veranstaltung->name, $textBreite));
+
+        // 2. Datum und Uhrzeit
+        $pdf->SetFont('Helvetica', '', 9.5);
+        $pdf->SetXY($x, $y + 5.6);
+        $pdf->Cell($textBreite, 4.5, $this->text($vorstellung->anzeige()));
+
+        // 3. Kategorie · Preis bzw. „Freikarte“
+        $pdf->SetXY($x, $y + 10.4);
+        $zeile = $ticket->ist_freikarte ? 'Freikarte' : $ticket->kategorie->name.' · '.Geld::anzeigen($ticket->preis_cent);
+        $pdf->Cell($textBreite, 4.5, $this->kuerzen($pdf, $zeile, $textBreite));
+
+        // 4. Name (Reservierung/Freikarte) mit Stapelposition
+        if ($ticket->name) {
+            $pdf->SetFont('Helvetica', '', 8.5);
+            $pdf->SetXY($x, $y + 15.4);
+            $name = 'Name: '.$ticket->name.($ticket->stapelText() ? ' · '.$ticket->stapelText() : '');
+            $pdf->Cell($textBreite, 4.5, $this->kuerzen($pdf, $name, $textBreite));
+        }
+
+        // 5. Ticketnummer
+        $pdf->SetFont('Courier', 'B', 11);
+        $pdf->SetXY($x, $h - $rand - 5.5);
+        $pdf->Cell($textBreite, 5, $ticket->nummer);
+    }
+
+    private function qr(FPDF $pdf, string $inhalt, float $x, float $y, float $groesse): void
+    {
+        $matrix = Encoder::encode($inhalt, ErrorCorrectionLevel::M())->getMatrix();
+        $anzahl = $matrix->getWidth();
+        $ruhezone = 2;
+        $modul = $groesse / ($anzahl + 2 * $ruhezone);
+
+        $pdf->SetFillColor(0, 0, 0);
+        for ($zeile = 0; $zeile < $anzahl; $zeile++) {
+            $start = null;
+            for ($spalte = 0; $spalte <= $anzahl; $spalte++) {
+                $dunkel = $spalte < $anzahl && $matrix->get($spalte, $zeile) === 1;
+                if ($dunkel && $start === null) {
+                    $start = $spalte;
+                } elseif (! $dunkel && $start !== null) {
+                    $pdf->Rect($x + ($ruhezone + $start) * $modul, $y + ($ruhezone + $zeile) * $modul, ($spalte - $start) * $modul, $modul + 0.02, 'F');
+                    $start = null;
+                }
+            }
+        }
+    }
+
+    private function kuerzen(FPDF $pdf, string $text, float $breite): string
+    {
+        $text = $this->text($text);
+        if ($pdf->GetStringWidth($text) <= $breite) {
+            return $text;
+        }
+        while (strlen($text) > 1 && $pdf->GetStringWidth($text.chr(133)) > $breite) {
+            $text = substr($text, 0, -1);
+        }
+
+        return rtrim($text).chr(133); // „…“ in Windows-1252
+    }
+
+    private function text(string $text): string
+    {
+        return (string) iconv('UTF-8', 'windows-1252//TRANSLIT', $text);
+    }
+}

@@ -39,7 +39,7 @@ final class Rechtekatalog
         // Ticket
         'ticket.kategorien' => ['Kategorien und Preise', 'Ticket', 'ticket', '3', true],
         'ticket.kontingente' => ['Kontingente', 'Ticket', 'ticket', '3', true],
-        'ticket.reservierungen' => ['Reservierungen', 'Ticket', 'ticket', '4', true],
+        'ticket.reservierungen' => ['Reservierungen (ab Stufe 3: Freikarten-Stapel des Vereins)', 'Ticket', 'ticket', '3', true],
         'ticket.verkaufsstellen' => ['Vorverkaufsstellen verwalten', 'Ticket', 'ticket', '3', true],
         'ticket.abendkasse' => ['Abendkasse', 'Ticket', 'ticket', '4', true],
         'ticket.auswertungen' => ['Auswertungen ansehen', 'Ticket', 'ticket', '4', true],
@@ -62,7 +62,7 @@ final class Rechtekatalog
     ];
 
     /** Stufen, deren Rechte bereits eine Funktion haben. */
-    private const AKTIVE_STUFEN = ['1a', '1b', '2'];
+    private const AKTIVE_STUFEN = ['1a', '1b', '2', '3'];
 
     /** @return list<string> */
     public static function alle(): array
