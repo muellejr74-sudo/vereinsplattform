@@ -45,6 +45,11 @@ class Auftragsverwaltung
         if ($art === 'freikarten' && blank($name)) {
             throw new InvalidArgumentException('Bitte den Namen für die Freikarten angeben.');
         }
+        // Mehr anfordern, als frei ist, ergibt keinen Sinn (Wunsch des Betreibers); belegt wird weiterhin erst mit der Bestätigung (E30).
+        $frei = $this->kontingent->frei($vorstellung);
+        if ($frei !== null && array_sum($mengen) > $frei) {
+            throw new InvalidArgumentException(array_sum($mengen).' Karten angefordert, aber nur noch '.$frei.' Plätze frei.');
+        }
 
         return DB::transaction(function () use ($vorstellung, $stelle, $art, $mengen, $name, $bemerkung, $durch) {
             $auftrag = Kartenauftrag::create([

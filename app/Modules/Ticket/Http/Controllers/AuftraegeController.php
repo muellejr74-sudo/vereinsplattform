@@ -55,7 +55,7 @@ class AuftraegeController extends Controller
         ]);
     }
 
-    public function create(Request $request): View|RedirectResponse
+    public function create(Request $request, Kontingent $kontingent): View|RedirectResponse
     {
         $benutzer = $request->user();
         $art = $request->query('art') === 'freikarten' ? 'freikarten' : 'karten';
@@ -77,6 +77,7 @@ class AuftraegeController extends Controller
             'vorstellungen' => $vorstellungen,
             'kategorien' => $kategorien,
             'vorauswahl' => (int) $request->query('vorstellung'),
+            'frei' => $vorstellungen->mapWithKeys(fn ($v) => [$v->id => $kontingent->frei($v)])->all(),
         ]);
     }
 

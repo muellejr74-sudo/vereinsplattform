@@ -67,15 +67,18 @@
         function pruefen() {
             var grenze = frei();
             var summe = 0;
-            felder.forEach(function (f) { if (!f.disabled) { summe += parseInt(f.value, 10) || 0; } });
+            felder.forEach(function (f) { if (!f.disabled && !f.closest('[hidden]')) { summe += parseInt(f.value, 10) || 0; } });
             var zuViel = grenze !== null && summe > grenze;
             hinweis.hidden = !zuViel;
             if (zuViel) {
                 hinweis.textContent = summe + ' Karten gewählt, aber nur noch ' + grenze + ' frei – bitte ' + (summe - grenze) + ' weniger.';
             }
-            form.querySelectorAll('button[type=submit]').forEach(function (k) { k.disabled = zuViel; });
+            form.querySelectorAll('button[type=submit]').forEach(function (k) {
+                // Nur selbst gesetzte Sperren wieder lösen (andere Sperren, z. B. „keine Kategorien“, bleiben).
+                if (zuViel) { k.disabled = true; k.dataset.zuViel = '1'; } else if (k.dataset.zuViel) { k.disabled = false; delete k.dataset.zuViel; }
+            });
             felder.forEach(function (f) {
-                if (f.mengeKnopfPlus) { f.mengeKnopfPlus.disabled = grenze !== null && summe >= grenze; }
+                if (f.mengeKnopfPlus) { f.mengeKnopfPlus.disabled = grenze !== null && summe >= grenze && !f.closest('[hidden]'); }
             });
         }
 
