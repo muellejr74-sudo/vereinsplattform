@@ -17,7 +17,8 @@
         @else
             @php $betrag = (int) $auftrag->tickets->sum('preis_cent'); @endphp
             <h1>Kassieren</h1>
-            <p class="hinweis">{{ $auftrag->tickets->count() }} {{ $auftrag->tickets->count() === 1 ? 'Karte' : 'Karten' }} · {{ $auftrag->vorstellung->anzeige() }} · die Etiketten sind im anderen Tab</p>
+            <p class="hinweis">{{ $auftrag->tickets->count() }} {{ $auftrag->tickets->count() === 1 ? 'Karte' : 'Karten' }} · {{ $auftrag->vorstellung->anzeige() }} · die Etiketten sind im anderen Tab ·
+                <a href="{{ route('tickets.selbstdruck.show', $auftrag) }}" target="_blank">Karten anzeigen / Nachdruck</a></p>
             <p class="kasse-betrag">Zu zahlen <strong>{{ \App\Modules\Ticket\Dienste\Geld::anzeigen($betrag) }}</strong></p>
 
             @include('ticket::teile.rueckgeld', ['betrag' => $betrag])

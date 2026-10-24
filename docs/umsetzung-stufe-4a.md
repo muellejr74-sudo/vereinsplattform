@@ -32,6 +32,7 @@ Freigegeben am 24.10.2026 (P-5.4). Fachliche Grundlage: E1, E4b, E40–E46a, E11
 | T4a-25 | **Selbstdruck in neuem Tab:** „Karten erzeugen und drucken“ öffnet die neuen Karten in einem neuen Tab (Drucken, Nachdruck, „Fertig – Tab schließen“); die Verkaufsseite lädt sich neu (Menge 0, aktuelle freie Plätze, gleiche Vorstellung). | Wunsch bei der Abnahme: gleich weiterverkaufen. |
 | T4a-26 | **Selbstdruck mit Summe und Kassieren:** Gesamtbetrag schon beim Eintippen (inkl. abweichender Preise der Vorstellung). Nach „Karten erzeugen und drucken“ öffnen sich die Karten im neuen Tab; im ersten Tab erscheint „Kassieren“ mit Betrag (vom Server), Feld „Gegeben“, Schnellknöpfen (passend, 10/20/50/100 €) und Rückgeld. Das Rückgeld wird nur angezeigt, nicht gespeichert. „Abschließen“ führt zum nächsten Verkauf. | Wunsch bei der Abnahme. |
 | T4a-27 | **Abendkasse mit Kassieren und Rückgeld:** Nach „Bar bezahlt“ (Verkauf, Abholung, Bestand) erscheint „Kassieren“ mit Betrag, „Gegeben“, Schnellknöpfen und Rückgeld; „Abschließen“ führt ins Menü. Bei Kartenzahlung direkt ins Menü. Nur Anzeige, nichts gespeichert. | Wunsch bei der Abnahme. |
+| T4a-28 | **Selbstdruck: neuer Tab zeigt direkt die Etiketten** (PDF) statt einer Zwischenseite; „Karten anzeigen / Nachdruck“ als Link auf der Kassieren-Seite. | Wunsch bei der Abnahme. |
 | T4a-14 | Rechte: „Abendkasse“ und „Stornieren“ aktiv; **neues sensibles Recht „Zahlungseingang vermerken“** (E125). „Auswertungen“ und „Abschluss“ folgen mit Stufe 4b. | |
 
 ## Ehrlicher Hinweis zu den Tests

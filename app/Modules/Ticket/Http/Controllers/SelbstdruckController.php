@@ -66,7 +66,8 @@ class SelbstdruckController extends Controller
             return back()->withInput()->withErrors(['verkauf' => $e->getMessage()]);
         }
 
-        return redirect()->route('tickets.selbstdruck.show', $auftrag);
+        // Der neue Tab zeigt sofort die Etiketten zum Drucken (Wunsch des Betreibers); Nachdruck über „Kassieren“.
+        return redirect()->route('tickets.selbstdruck.etiketten', $auftrag);
     }
 
     /**

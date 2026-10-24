@@ -31,7 +31,8 @@ class SelbstdruckTest extends TicketTestCase
             ->assertSee('data-preise=\'{"'.$this->erwachsene->id.'":1200,"'.$this->kinder->id.'":600}\'', false);
 
         $this->post('/tickets/verkaufen', ['verkaufsstelle_id' => $this->baeckerei->id, 'vorstellung_id' => $this->vorstellung->id,
-            'mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1]])->assertSessionHasNoErrors();
+            'mengen' => [$this->erwachsene->id => 2, $this->kinder->id => 1]])->assertSessionHasNoErrors()
+            ->assertRedirectContains('/etiketten.pdf'); // neuer Tab zeigt direkt die Etiketten
 
         $auftrag = $this->im($this->tvm, fn () => Kartenauftrag::latest('id')->firstOrFail());
         $this->assertSame('ausgegeben', $auftrag->status);
@@ -46,7 +47,7 @@ class SelbstdruckTest extends TicketTestCase
 
         // Kassieren im ersten Tab: Betrag des eben erzeugten Verkaufs.
         $this->get('/tickets/verkaufen/kassieren?nach='.($auftrag->id - 1).'&vorstellung='.$this->vorstellung->id)->assertOk()
-            ->assertSee('Kassieren')->assertSee('30,00 €')->assertSee('data-betrag="3000"', false);
+            ->assertSee('Kassieren')->assertSee('30,00 €')->assertSee('Karten anzeigen / Nachdruck')->assertSee('data-betrag="3000"', false);
         $this->get('/tickets/verkaufen/kassieren?nach='.$auftrag->id.'&versuch=8')->assertSee('Kein neuer Verkauf');
 
         $this->post('/tickets/verkaufen/karten/'.$tickets[0]->id.'/nachdruck')->assertOk();
