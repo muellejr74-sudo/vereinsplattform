@@ -57,6 +57,12 @@ class TicketZugriff
         return $this->stellenVon($benutzer)->isNotEmpty();
     }
 
+    /** Verkaufsstellen der Person, die ihre Karten selbst drucken (E128). */
+    public function selbstdruckStellen(User $benutzer): Collection
+    {
+        return $this->stellenVon($benutzer)->where('druckt_selbst', true)->values();
+    }
+
     /** Reservierungen annehmen: Vereinsmitglieder mit Recht „Reservierungen“ und Vorverkaufsstellen (E124). */
     public function darfReservieren(User $benutzer): bool
     {

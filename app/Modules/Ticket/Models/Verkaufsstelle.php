@@ -16,11 +16,11 @@ class Verkaufsstelle extends Model
 
     protected $table = 'verkaufsstellen';
 
-    protected $fillable = ['name', 'art', 'aktiv'];
+    protected $fillable = ['name', 'art', 'aktiv', 'druckt_selbst'];
 
     protected function casts(): array
     {
-        return ['aktiv' => 'boolean'];
+        return ['aktiv' => 'boolean', 'druckt_selbst' => 'boolean'];
     }
 
     public function benutzer(): BelongsToMany

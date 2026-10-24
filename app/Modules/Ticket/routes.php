@@ -6,6 +6,7 @@ use App\Modules\Ticket\Http\Controllers\EinlassController;
 use App\Modules\Ticket\Http\Controllers\EinstellungenController;
 use App\Modules\Ticket\Http\Controllers\PruefenController;
 use App\Modules\Ticket\Http\Controllers\ReservierungenController;
+use App\Modules\Ticket\Http\Controllers\SelbstdruckController;
 use App\Modules\Ticket\Http\Controllers\StornoController;
 use App\Modules\Ticket\Http\Controllers\UebersichtController;
 use App\Modules\Ticket\Http\Controllers\VeranstaltungTicketsController;
@@ -60,6 +61,13 @@ Route::middleware(['auth', 'zweifaktor', 'verein', 'ticketmodul'])->prefix('tick
         Route::post('auftraege/{auftrag}/uebergeben', [AuftraegeController::class, 'uebergeben'])->whereNumber('auftrag')->name('auftraege.uebergeben');
         Route::post('karten/{ticket}/nachdruck', [AuftraegeController::class, 'nachdruck'])->whereNumber('ticket')->name('nachdruck');
     });
+
+    // Verkaufsstelle druckt selbst (E128)
+    Route::get('verkaufen', [SelbstdruckController::class, 'create'])->name('selbstdruck.create');
+    Route::post('verkaufen', [SelbstdruckController::class, 'store'])->name('selbstdruck.store');
+    Route::get('verkaufen/{auftrag}', [SelbstdruckController::class, 'show'])->whereNumber('auftrag')->name('selbstdruck.show');
+    Route::get('verkaufen/{auftrag}/etiketten.pdf', [SelbstdruckController::class, 'etiketten'])->whereNumber('auftrag')->name('selbstdruck.etiketten');
+    Route::post('verkaufen/karten/{ticket}/nachdruck', [SelbstdruckController::class, 'nachdruck'])->whereNumber('ticket')->name('selbstdruck.nachdruck');
 
     // Reservierungen und Vorkasse (E40, E124–E127)
     Route::get('reservierungen', [ReservierungenController::class, 'index'])->name('reservierungen.index');

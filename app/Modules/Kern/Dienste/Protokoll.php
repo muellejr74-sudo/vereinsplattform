@@ -129,6 +129,7 @@ class Protokoll
         'ticket.abendkasse_bestand' => 'Abendkasse: Karte aus Bestand verkauft',
         'ticket.freikarten_ausgegeben' => 'Freikarten an der Abendkasse ausgegeben',
         'ticket.storniert' => 'Karten storniert',
+        'ticket.selbstdruck' => 'Karten an der Verkaufsstelle verkauft und gedruckt',
         'ticket.einstellungen_geaendert' => 'Ticket-Einstellungen geändert',
         'ticket.bankverbindung_geaendert' => 'Bankverbindung geändert',
     ];

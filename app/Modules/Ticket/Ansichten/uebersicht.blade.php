@@ -12,6 +12,9 @@
         @else
             <a class="kachel" href="{{ route('tickets.auftraege.index') }}"><strong>Meine Aufträge</strong><span>Kartenbestellungen und Freikarten</span></a>
         @endif
+        @if ($stellen->where('druckt_selbst', true)->isNotEmpty())
+            <a class="kachel" href="{{ route('tickets.selbstdruck.create') }}"><strong>Karten verkaufen und drucken</strong><span>direkt an der Verkaufsstelle, ohne Druckstelle</span></a>
+        @endif
         @if ($stellen->isNotEmpty())
             <a class="kachel" href="{{ route('tickets.auftraege.create') }}"><strong>Karten bestellen</strong><span>für {{ $stellen->pluck('name')->join(', ') }}</span></a>
         @endif
