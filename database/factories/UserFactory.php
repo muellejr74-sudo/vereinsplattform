@@ -30,7 +30,19 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'aktiv' => true,
         ];
+    }
+
+    /** Super-Administrator (ohne eingerichtete Zwei-Faktor-Anmeldung). */
+    public function superAdmin(): static
+    {
+        return $this->state(fn () => ['ist_superadmin' => true]);
+    }
+
+    public function deaktiviert(): static
+    {
+        return $this->state(fn () => ['aktiv' => false]);
     }
 
     /**

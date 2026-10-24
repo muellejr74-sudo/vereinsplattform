@@ -20,6 +20,11 @@ Der **Server holt sich den Code selbst** von GitHub und darf dort **nur lesen**.
 ~/vp-einspielen.sh test ZWEIGNAME       Test aus einem bestimmten Zweig (z. B. zur Abnahme)
 ~/vp-einspielen.sh live                 Live aus main – mit Rückfrage und Sicherung vorab
 ~/vp-einspielen.sh zugangsdaten test    Datenbank-Zugangsdaten abfragen und speichern
+~/vp-einspielen.sh email test           Absender-Postfach (noreply@…) eintragen und Test-E-Mail senden
+~/vp-einspielen.sh befehl test vp:superadmin-anlegen
+                                        erstes Super-Admin-Konto anlegen (einmalig)
+~/vp-einspielen.sh befehl test vp:zweifaktor-zuruecksetzen E-MAIL
+                                        Zwei-Faktor-Anmeldung zurücksetzen (Handy verloren)
 ~/vp-einspielen.sh aktualisieren ZWEIG  das Skript selbst aktualisieren (Standard: main)
 ```
 
@@ -83,6 +88,31 @@ lima-city-Verwaltung → **Cronjobs** → **Cronjob erstellen** → **Shell-Cron
 ```
 cd ~/vereinsplattform_test && flock -n ~/.vp-test-cron.lock /opt/lima-php/8.4/bin/php artisan schedule:run >> storage/logs/cron.log 2>&1
 ```
+
+### Schritt 8 – Absender-Postfach für Systemmails (ab Stufe 1a)
+
+Die Plattform verschickt E-Mails für **Passwort zurücksetzen** und **Einladungen neuer Benutzer**.
+
+1. lima-city-Verwaltung → **E-Mail** → Postfach `noreply@regional-meine-wahl.de` anlegen, sicheres Passwort vergeben.
+2. Den **Postausgangsserver (SMTP)** aus der lima-city-Hilfe/Verwaltung notieren.
+3. Auf dem Server:
+   ```bash
+   ~/vp-einspielen.sh email test
+   ```
+   Das Skript fragt Adresse, Server, Port (Vorschlag 465) und Passwort ab, speichert sie in der `.env` und schickt auf Wunsch eine Test-E-Mail.
+
+### Schritt 9 – Erstes Super-Admin-Konto (einmalig, E8a)
+
+```bash
+~/vp-einspielen.sh befehl test vp:superadmin-anlegen
+```
+Name, E-Mail-Adresse und Passwort (mindestens 12 Zeichen, wird nicht angezeigt) eingeben. Danach auf der Webseite anmelden und die **Zwei-Faktor-Anmeldung** mit der Authenticator-App einrichten. Die **Notfall-Codes** ausdrucken und sicher aufbewahren.
+
+**Handy und Notfall-Codes verloren?**
+```bash
+~/vp-einspielen.sh befehl test vp:zweifaktor-zuruecksetzen admin@beispiel.de
+```
+Danach bei der nächsten Anmeldung neu einrichten.
 
 ---
 

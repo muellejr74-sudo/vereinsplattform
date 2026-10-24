@@ -19,7 +19,8 @@ class DatenbankTest extends TestCase
 
     public function test_alle_tabellen_werden_angelegt(): void
     {
-        foreach (['users', 'sessions', 'cache', 'jobs', 'migrations'] as $tabelle) {
+        foreach (['users', 'sessions', 'cache', 'jobs', 'migrations', 'mandanten', 'mitgliedschaften', 'protokoll',
+            'plattformtexte', 'vereinstexte', 'vertraute_geraete', 'einladung_tokens'] as $tabelle) {
             $this->assertTrue(Schema::hasTable($tabelle), "Tabelle {$tabelle} fehlt.");
         }
     }

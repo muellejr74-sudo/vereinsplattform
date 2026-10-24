@@ -99,6 +99,14 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Einladungslinks für neue Benutzer: 3 Tage gültig.
+        'einladungen' => [
+            'provider' => 'users',
+            'table' => 'einladung_tokens',
+            'expire' => 4320,
+            'throttle' => 0,
+        ],
     ],
 
     /*

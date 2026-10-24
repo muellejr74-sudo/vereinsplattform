@@ -10,6 +10,10 @@
 #   ~/vp-einspielen.sh live             Live-Umgebung (immer Zweig main, mit Rückfrage)
 #   ~/vp-einspielen.sh zugangsdaten test|live [ZWEIG]
 #                                       Datenbank-Zugangsdaten abfragen und sauber speichern
+#   ~/vp-einspielen.sh email test|live  Postfach für Systemmails (noreply@…) eintragen und testen
+#   ~/vp-einspielen.sh befehl test|live vp:superadmin-anlegen
+#   ~/vp-einspielen.sh befehl test|live vp:zweifaktor-zuruecksetzen E-MAIL
+#                                       freigegebene Plattform-Befehle ausführen
 #   ~/vp-einspielen.sh aktualisieren [ZWEIG]
 #                                       dieses Skript selbst aktualisieren (Standard: main)
 #
@@ -191,6 +195,101 @@ if [[ "${1:-}" == "zugangsdaten" ]]; then
         fi
     fi
     exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Hilfsfunktion: einen Wert in einer vorhandenen .env setzen (oder anhängen)
+# ---------------------------------------------------------------------------
+env_setzen() {
+    local datei="$1" schluessel="$2" wert="$3" tmp
+    tmp="$(mktemp)"
+    if grep -qE "^${schluessel}=" "$datei"; then
+        while IFS= read -r zeile || [[ -n "$zeile" ]]; do
+            if [[ "$zeile" == "${schluessel}="* ]]; then
+                printf '%s=%s\n' "$schluessel" "$wert"
+            else
+                printf '%s\n' "$zeile"
+            fi
+        done < "$datei" > "$tmp"
+    else
+        cat "$datei" > "$tmp"
+        printf '%s=%s\n' "$schluessel" "$wert" >> "$tmp"
+    fi
+    install -m 600 "$tmp" "$datei"
+    rm -f "$tmp"
+}
+
+umgebung_waehlen() {
+    case "${1:-}" in
+        test) ZIEL="$ZIEL_TEST" ;;
+        live) ZIEL="$ZIEL_LIVE" ;;
+        *) abbruch "Bitte Umgebung angeben: test oder live" ;;
+    esac
+    pruefe_ziel "$ZIEL"
+    [[ -f "$ZIEL/.env" ]] || abbruch "$ZIEL/.env fehlt. Bitte zuerst: $0 zugangsdaten ${1:-test}"
+}
+
+# ---------------------------------------------------------------------------
+# E-Mail-Postfach für Systemmails eintragen (Stufe 1a: Passwort zurücksetzen, Einladungen)
+# ---------------------------------------------------------------------------
+if [[ "${1:-}" == "email" ]]; then
+    umgebung_waehlen "${2:-}"
+
+    echo
+    echo "Bitte die Daten des Absender-Postfachs aus der lima-city-Verwaltung (E-Mail → Postfächer) eingeben."
+    echo "Leere Eingabe übernimmt den Vorschlag in [Klammern]."
+    read -r -p "  Postfach-Adresse [noreply@regional-meine-wahl.de]: " mail_adresse
+    mail_adresse="${mail_adresse:-noreply@regional-meine-wahl.de}"
+    read -r -p "  Postausgangsserver (SMTP), siehe lima-city-Hilfe: " mail_host
+    read -r -p "  Port [465]: " mail_port
+    mail_port="${mail_port:-465}"
+    read -r -s -p "  Passwort des Postfachs (wird nicht angezeigt): " mail_pass; echo
+    [[ -n "$mail_host" && -n "$mail_pass" ]] || abbruch "Server und Passwort sind nötig."
+    [[ "$mail_port" =~ ^[0-9]+$ ]] || abbruch "Der Port muss eine Zahl sein."
+
+    cp -p "$ZIEL/.env" "$ZIEL/.env.alt-$(date +%Y%m%d-%H%M%S)"
+    env_setzen "$ZIEL/.env" MAIL_MAILER smtp
+    if [[ "$mail_port" == "465" ]]; then
+        env_setzen "$ZIEL/.env" MAIL_SCHEME smtps
+    else
+        env_setzen "$ZIEL/.env" MAIL_SCHEME smtp
+    fi
+    env_setzen "$ZIEL/.env" MAIL_HOST "$(env_zitat "$mail_host")"
+    env_setzen "$ZIEL/.env" MAIL_PORT "$mail_port"
+    env_setzen "$ZIEL/.env" MAIL_USERNAME "$(env_zitat "$mail_adresse")"
+    env_setzen "$ZIEL/.env" MAIL_PASSWORD "$(env_zitat "$mail_pass")"
+    env_setzen "$ZIEL/.env" MAIL_FROM_ADDRESS "$(env_zitat "$mail_adresse")"
+    ok "E-Mail-Einstellungen gespeichert (vorherige Datei als .env.alt-… gesichert)"
+
+    if [[ -f "$ZIEL/artisan" && -d "$ZIEL/vendor" ]]; then
+        ( cd "$ZIEL" && php84 artisan config:clear >/dev/null && php84 artisan optimize >/dev/null ) || true
+        read -r -p "  An welche Adresse soll eine Test-E-Mail gehen? (leer = keine): " test_an
+        if [[ -n "$test_an" ]]; then
+            if ( cd "$ZIEL" && VP_TEST_AN="$test_an" php84 artisan tinker --execute='\Illuminate\Support\Facades\Mail::raw("Diese Test-E-Mail bestätigt, dass die Plattform E-Mails versenden kann.", fn ($m) => $m->to(getenv("VP_TEST_AN"))->subject("Test-E-Mail der Vereinsplattform")); echo "gesendet";' ); then
+                echo; ok "Test-E-Mail versendet – bitte Posteingang (und Spam-Ordner) prüfen."
+            else
+                warnung "Versand fehlgeschlagen – bitte Server, Port und Passwort prüfen und den Befehl wiederholen."
+            fi
+        fi
+    fi
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Freigegebene Plattform-Befehle (z. B. ersten Super-Admin anlegen, E8a)
+# ---------------------------------------------------------------------------
+if [[ "${1:-}" == "befehl" ]]; then
+    umgebung_waehlen "${2:-}"
+    case "${3:-}" in
+        vp:superadmin-anlegen)
+            ( cd "$ZIEL" && php84 artisan vp:superadmin-anlegen ) ;;
+        vp:zweifaktor-zuruecksetzen)
+            [[ -n "${4:-}" ]] || abbruch "Bitte die E-Mail-Adresse des Kontos angeben."
+            ( cd "$ZIEL" && php84 artisan vp:zweifaktor-zuruecksetzen "$4" ) ;;
+        *)
+            abbruch "Erlaubt sind: vp:superadmin-anlegen, vp:zweifaktor-zuruecksetzen E-MAIL" ;;
+    esac
+    exit $?
 fi
 
 # ---------------------------------------------------------------------------

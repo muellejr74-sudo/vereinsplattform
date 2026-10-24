@@ -1,16 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web-Routen
 |--------------------------------------------------------------------------
 |
-| Stufe 0: nur die Startseite. Die Routen der Module (Kern, Ticket, Saal,
-| Gästeportal, Werbung) werden in späteren Stufen in ihren eigenen Modulen
-| angelegt und hier eingebunden.
+| Die Adressen der Module stehen in den Modulen selbst und werden von deren
+| ServiceProvider eingebunden:
+|   app/Modules/Kern/routes.php   Startseite, Anmeldung, Konto, Verwaltung, Rechtstexte
 |
 */
-
-Route::view('/', 'startseite')->name('startseite');

@@ -90,3 +90,153 @@ body {
     color: #6b6b66;
     font-size: 0.85rem;
 }
+
+/* ------------------------------------------------------------------
+ * Stufe 1a: Navigation, Formulare, Tabellen, Meldungen
+ * ------------------------------------------------------------------ */
+
+a { color: var(--farbe-primaer); }
+
+.kopfzeile__inhalt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+
+.kopfzeile a, .kopfzeile .link-knopf { color: var(--farbe-primaer-text); text-decoration: none; }
+
+.hauptmenue { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; }
+.hauptmenue a:hover, .hauptmenue .link-knopf:hover { text-decoration: underline; }
+
+.inline { display: inline; }
+
+.link-knopf {
+    background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+    color: var(--farbe-primaer); text-decoration: underline;
+}
+
+.karte + .karte, .karte + .tabelle-rahmen, .titelzeile + .karte { margin-top: var(--abstand); }
+.karte--schmal { max-width: 32rem; margin-left: auto; margin-right: auto; }
+.karte--wichtig { border-color: var(--status-offen); border-width: 2px; }
+.karte h2 { margin-top: 0; font-size: 1.2rem; }
+
+.titelzeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: var(--abstand); }
+.titelzeile h1 { margin: 0; }
+
+/* Knöpfe – groß genug für Finger (mind. 44 px) */
+.knopf {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--farbe-primaer);
+    border-radius: var(--radius);
+    background: var(--farbe-primaer);
+    color: var(--farbe-primaer-text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+.knopf:hover { filter: brightness(1.1); }
+.knopf--zweit { background: #fff; color: var(--farbe-primaer); }
+
+.knopfzeile { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: var(--abstand); }
+
+/* Formulare */
+.formular { display: flex; flex-direction: column; gap: 0.35rem; }
+.formular label { font-weight: 600; margin-top: 0.6rem; }
+.formular .knopf { margin-top: var(--abstand); align-self: flex-start; }
+.formular input[type="text"], .formular input[type="email"], .formular input[type="password"],
+.formular input[type="search"], .formular select, .formular textarea {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--farbe-rand);
+    border-radius: var(--radius);
+    font: inherit;
+    background: #fff;
+}
+.formular textarea { font-family: ui-monospace, monospace; font-size: 0.9rem; }
+.formular input:focus, .formular select:focus, .formular textarea:focus { outline: 2px solid var(--farbe-primaer); outline-offset: 1px; }
+.formular fieldset { border: 1px solid var(--farbe-rand); border-radius: var(--radius); margin-top: 0.6rem; }
+.formular .auswahl { font-weight: normal; display: flex; gap: 0.5rem; align-items: flex-start; }
+.formular .auswahl input { margin-top: 0.3rem; width: 1.1rem; height: 1.1rem; }
+
+.formular--zeile { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: var(--abstand); }
+.formular--zeile label { margin-top: 0; width: 100%; }
+.formular--zeile .feld { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 12rem; }
+.formular--zeile .feld select, .formular--zeile .feld input { width: 100%; flex: none; }
+.formular--zeile select, .formular--zeile input { flex: 1 1 12rem; width: auto; }
+.formular--zeile .knopf { margin-top: 0; }
+
+.eingabe--code { font-size: 1.5rem; letter-spacing: 0.3rem; text-align: center; max-width: 14rem; }
+.eingabe--kurz { max-width: 10rem; }
+
+/* Meldungen */
+.meldung { padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: var(--abstand); border: 1px solid; }
+.meldung ul { margin: 0; padding-left: 1.2rem; }
+.meldung--erfolg { background: #e8f5e9; border-color: var(--status-fertig); }
+.meldung--fehler { background: #fdecea; border-color: var(--status-storniert); }
+
+/* Statusmarken – plattformweit einheitlich (E76a) */
+.status { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 1rem; font-size: 0.85rem; color: #fff; }
+.status--fertig { background: var(--status-fertig); }
+.status--offen { background: var(--status-offen); }
+.status--storniert { background: var(--status-storniert); }
+.marke { display: inline-block; padding: 0 0.5rem; border-radius: 1rem; font-size: 0.75rem; background: var(--farbe-sekundaer); }
+
+/* Tabellen – auf dem Handy als Karten */
+.tabelle-rahmen { overflow-x: auto; }
+.tabelle { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--farbe-rand); border-radius: var(--radius); }
+.tabelle th, .tabelle td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--farbe-rand); vertical-align: top; }
+.tabelle th { background: var(--farbe-sekundaer); font-size: 0.9rem; }
+.tabelle--klein { font-size: 0.9rem; }
+.tabelle .aktionen { white-space: nowrap; }
+.tabelle .aktionen > * + * { margin-left: 0.75rem; }
+.codes code { white-space: nowrap; }
+.details { font-size: 0.8rem; word-break: break-all; }
+
+@media (max-width: 40rem) {
+    .tabelle thead { display: none; }
+    .tabelle, .tabelle tbody, .tabelle tr, .tabelle td { display: block; width: 100%; }
+    .tabelle tr { border-bottom: 2px solid var(--farbe-rand); padding: 0.5rem 0; }
+    .tabelle td { border: 0; padding: 0.25rem 0.75rem; }
+    .tabelle td[data-titel]::before { content: attr(data-titel) ": "; font-weight: 600; }
+    .tabelle .aktionen { white-space: normal; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+    .tabelle .aktionen > * + * { margin-left: 0; }
+    .codes { columns: 1; }
+}
+
+/* Kacheln der Verwaltung */
+.kacheln { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: var(--abstand); }
+.kachel {
+    display: flex; flex-direction: column; gap: 0.25rem;
+    padding: var(--abstand); background: #fff; border: 1px solid var(--farbe-rand); border-radius: var(--radius);
+    text-decoration: none; color: var(--farbe-text);
+}
+.kachel strong { color: var(--farbe-primaer); font-size: 1.1rem; }
+.kachel span { color: #6b6b66; font-size: 0.9rem; }
+
+/* Angaben, Codes, QR */
+.angaben { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+.angaben dt { font-weight: 600; }
+.angaben dd { margin: 0; }
+.codes { columns: 2; font-size: 1.1rem; }
+.codes code, .schluessel { font-family: ui-monospace, monospace; letter-spacing: 0.05rem; }
+.schluessel { display: inline-block; padding: 0.5rem; background: var(--farbe-sekundaer); border-radius: var(--radius); word-break: break-all; }
+.qr { margin: 0.75rem 0; }
+.qr svg { width: 220px; height: 220px; max-width: 100%; background: #fff; }
+.schritte li { margin-bottom: 0.75rem; }
+
+.seiten { display: flex; gap: 1rem; justify-content: center; align-items: center; margin-top: var(--abstand); }
+.seiten__aus { color: #a0a09a; }
+
+.rechtstext { overflow-wrap: anywhere; }
+.fusszeile a { color: inherit; }
+
+@media print {
+    .kopfzeile, .fusszeile, .formular, .knopf, form { display: none !important; }
+    .karte { border: 0; }
+}
