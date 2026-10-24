@@ -5,6 +5,18 @@
 @section('inhalt')
     <h1>{{ $verein->name }} verwalten</h1>
     <div class="kacheln">
+        @can('veranstaltungen.verwalten')
+            <a class="kachel" href="{{ route('verein.veranstaltungen.index') }}"><strong>Veranstaltungen</strong><span>Veranstaltungen, Vorstellungen, Personal &amp; Einsatz-Code</span></a>
+        @endcan
+        @can('qrcodes.verwalten')
+            <a class="kachel" href="{{ route('verein.tische') }}"><strong>QR-Codes &amp; Tische</strong><span>Codes erzeugen, Aufkleber drucken, Tische zuordnen</span></a>
+        @endcan
+        @can('stationen.verwalten')
+            <a class="kachel" href="{{ route('verein.stationen') }}"><strong>Stationen</strong><span>Bedienung, Ausschank, Küche, Einlass</span></a>
+        @endcan
+        @can('orte.verwalten')
+            <a class="kachel" href="{{ route('verein.orte') }}"><strong>Orte &amp; Säle</strong><span>nur nötig bei mehreren Sälen</span></a>
+        @endcan
         @if (auth()->user()->can('benutzer.verwalten') || auth()->user()->can('rechte.vergeben'))
             <a class="kachel" href="{{ route('verein.personen.index') }}"><strong>Personen &amp; Rechte</strong><span>Personen hinzufügen, entfernen, Rechte vergeben</span></a>
         @endif

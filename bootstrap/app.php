@@ -28,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Zugriffsprüfung VOR dem Laden von Datensätzen aus der Adresse: Wer keinen Zugriff hat,
         // erhält immer "Kein Zugriff" und erfährt nicht, ob es einen Datensatz gibt.
+        // Ebenso muss der aktive Verein feststehen, bevor Datensätze aus der Adresse geladen werden –
+        // sonst würde der Mandantenfilter (zu Recht) nichts finden.
+        $middleware->prependToPriorityList(SubstituteBindings::class, SetzeMandantenkontext::class);
         $middleware->prependToPriorityList(SubstituteBindings::class, NurSuperAdmin::class);
 
         $middleware->redirectGuestsTo(fn () => route('anmeldung'));

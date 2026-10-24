@@ -25,6 +25,7 @@ class Protokoll
         array $details = [],
         ?User $benutzer = null,
         ?int $mandantId = null,
+        ?string $akteur = null,
     ): Protokolleintrag {
         $benutzer ??= Auth::user();
 
@@ -41,7 +42,7 @@ class Protokoll
             'zeitpunkt' => now(),
             'mandant_id' => $mandantId,
             'benutzer_id' => $benutzer?->id,
-            'akteur' => $benutzer?->name,
+            'akteur' => $akteur ?? $benutzer?->name,
             'aktion' => $aktion,
             'ziel_typ' => $ziel ? class_basename($ziel) : null,
             'ziel_id' => $ziel?->getKey(),
@@ -82,6 +83,31 @@ class Protokoll
         'verein.module_geaendert' => 'Module geändert',
         'rechte.geaendert' => 'Rechte geändert',
         'rechtstext.geaendert' => 'Rechtstext geändert',
+        'ort.angelegt' => 'Ort angelegt',
+        'ort.geaendert' => 'Ort geändert',
+        'saal.angelegt' => 'Saal angelegt',
+        'saal.geaendert' => 'Saal geändert',
+        'saal.geloescht' => 'Saal gelöscht',
+        'veranstaltung.angelegt' => 'Veranstaltung angelegt',
+        'veranstaltung.geaendert' => 'Veranstaltung geändert',
+        'veranstaltung.geloescht' => 'Veranstaltung gelöscht',
+        'vorstellung.angelegt' => 'Vorstellung angelegt',
+        'vorstellung.geaendert' => 'Vorstellung geändert',
+        'vorstellung.geloescht' => 'Vorstellung gelöscht',
+        'station.angelegt' => 'Station angelegt',
+        'station.geaendert' => 'Station geändert',
+        'station.geloescht' => 'Station gelöscht',
+        'station.besetzung' => 'Stationsnamen eingetragen',
+        'station.angemeldet' => 'Gerät an Station angemeldet',
+        'station.abgemeldet' => 'Gerät von Station abgemeldet',
+        'station.anmeldung_fehlgeschlagen' => 'Einsatz-Code falsch',
+        'einsatzcode.erzeugt' => 'Einsatz-Code erzeugt',
+        'qrcodes.erzeugt' => 'QR-Codes erzeugt',
+        'qrcode.geloescht' => 'QR-Code gelöscht',
+        'tisch.zugeordnet' => 'Tisch zugeordnet',
+        'tisch.uebernommen' => 'Tisch übernommen',
+        'tisch.abgegeben' => 'Tisch an andere Veranstaltung abgegeben',
+        'tisch.geloest' => 'Tischzuordnung gelöst',
     ];
 
     public static function bezeichnung(string $aktion): string
