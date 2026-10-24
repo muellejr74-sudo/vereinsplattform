@@ -3,10 +3,10 @@
 @once
     @push('skripte')
         <script src="{{ asset('js/vendor/jsQR-1.4.0.js') }}"></script>
-        <script src="{{ asset('js/scanner.js') }}?v=2"></script>
+        <script src="{{ asset('js/scanner.js') }}?v=3"></script>
     @endpush
 @endonce
-<form method="post" action="{{ $aktion }}" class="formular scanner" data-scanner @if ($json ?? false) data-json="1" @endif data-ergebnis="#scan-ergebnis" @isset($liste) data-liste="{{ $liste }}" @endisset>
+<form method="post" action="{{ $aktion }}" class="formular scanner" data-scanner @if ($json ?? false) data-json="1" @endif @if ($pause ?? false) data-pause="1" @endif data-ergebnis="#scan-ergebnis" @isset($liste) data-liste="{{ $liste }}" @endisset>
     @csrf
     <button type="button" class="knopf knopf--zweit" data-scanner-start>Kamera einschalten</button>
     <video hidden muted playsinline></video>

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Ticket\Dienste;
 
-use App\Modules\Kern\Models\Stationsgeraet;
+use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Ticket\Models\Ticket;
 
 /**
@@ -16,7 +16,7 @@ class Einlass
     public function __construct(private Kontingent $kontingent) {}
 
     /** @return array{farbe: string, titel: string, text: string} */
-    public function scannen(Stationsgeraet $geraet, string $eingabe, string $akteur): array
+    public function scannen(Vorstellung $vorstellung, string $eingabe, string $akteur): array
     {
         $ticket = TicketCode::finde($eingabe);
         if (! $ticket) {
@@ -24,7 +24,7 @@ class Einlass
         }
 
         $text = $ticket->nummer.' · '.($ticket->ist_freikarte ? 'Freikarte' : ($ticket->kategorie?->name ?? ''));
-        if ($ticket->vorstellung_id !== $geraet->vorstellung_id) {
+        if ($ticket->vorstellung_id !== $vorstellung->id) {
             $v = $ticket->vorstellung;
 
             return $this->ergebnis('rot', 'Andere Vorstellung', 'Diese Karte gilt für '.$v->veranstaltung->name.', '.$v->anzeige().'.');
@@ -52,11 +52,11 @@ class Einlass
     }
 
     /** @return array{eingelassen: int, belegt: int} */
-    public function zaehler(Stationsgeraet $geraet): array
+    public function zaehler(Vorstellung $vorstellung): array
     {
         return [
-            'eingelassen' => $this->kontingent->eingelassen($geraet->vorstellung),
-            'belegt' => $this->kontingent->belegt($geraet->vorstellung),
+            'eingelassen' => $this->kontingent->eingelassen($vorstellung),
+            'belegt' => $this->kontingent->belegt($vorstellung),
         ];
     }
 

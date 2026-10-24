@@ -5,6 +5,7 @@ namespace App\Modules\Ticket\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Kern\Models\Vorstellung;
 use App\Modules\Ticket\Dienste\Abendkasse;
+use App\Modules\Ticket\Dienste\Einlass;
 use App\Modules\Ticket\Dienste\Geld;
 use App\Modules\Ticket\Dienste\Kontingent;
 use App\Modules\Ticket\Dienste\Reservierungsverwaltung;
@@ -13,6 +14,7 @@ use App\Modules\Ticket\Models\Kartenauftrag;
 use App\Modules\Ticket\Models\Reservierung;
 use App\Modules\Ticket\Models\Ticket;
 use App\Modules\Ticket\Models\Ticketkategorie;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -202,6 +204,30 @@ class AbendkasseController extends Controller
         }
 
         return $this->menue($vorstellung)->with('hinweis', $anzahl.' nicht abgeholte Reservierungen storniert – die Plätze sind wieder frei.');
+    }
+
+    /** Einlass direkt vom Kassen-Handy (Wunsch des Betreibers, O50): ohne Einsatz-Code, mit Recht „Abendkasse“. */
+    public function einlass(Vorstellung $vorstellung, Einlass $einlass): View
+    {
+        return view('ticket::einlass', [
+            'v' => $vorstellung->load('veranstaltung'),
+            'unterzeile' => null,
+            'zaehler' => $einlass->zaehler($vorstellung),
+            'aktion' => route('tickets.abendkasse.einlass', $vorstellung),
+            'station' => false,
+        ]);
+    }
+
+    public function einlassScannen(Request $request, Vorstellung $vorstellung, Einlass $einlass): JsonResponse|RedirectResponse
+    {
+        $code = (string) $request->validate(['code' => ['required', 'string', 'max:200']])['code'];
+        $ergebnis = $einlass->scannen($vorstellung, $code, 'Abendkasse ('.$request->user()->name.')');
+
+        if ($request->expectsJson()) {
+            return response()->json($ergebnis + ['zaehler' => $einlass->zaehler($vorstellung)]);
+        }
+
+        return redirect()->route('tickets.abendkasse.einlass', $vorstellung)->with('scan', $ergebnis);
     }
 
     private function menue(Vorstellung $vorstellung): RedirectResponse

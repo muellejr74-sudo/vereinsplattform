@@ -17,6 +17,9 @@
         <a class="menue-knopf menue-knopf--haupt" href="{{ route('tickets.abendkasse.verkauf', $v) }}">
             <strong>Karten direkt verkaufen</strong><span>Spontanverkauf, bar oder mit Karte</span>
         </a>
+        <a class="menue-knopf" href="{{ route('tickets.abendkasse.einlass', $v) }}">
+            <strong>Einlass scannen</strong><span>Karten am Eingang prüfen</span>
+        </a>
         <a class="menue-knopf" href="{{ route('tickets.abendkasse.reservierungen', $v) }}">
             <strong>Reservierung abholen</strong><span>{{ $offen }} offen</span>
         </a>

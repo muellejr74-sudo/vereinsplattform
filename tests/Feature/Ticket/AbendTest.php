@@ -278,6 +278,24 @@ class AbendTest extends TicketTestCase
         $this->assertNotNull($admin);
     }
 
+    public function test_einlass_direkt_von_der_abendkasse(): void
+    {
+        $auftrag = $this->bestellen([$this->erwachsene->id => 1]);
+        $this->als($this->buero)->post('/tickets/auftraege/'.$auftrag->id.'/bestaetigen');
+        $this->post('/tickets/auftraege/'.$auftrag->id.'/gedruckt');
+        $karte = $this->tickets()->first();
+
+        $this->amAbend();
+        $basis = '/tickets/abendkasse/'.$this->vorstellung->id;
+        $this->als($this->kasse)->get($basis)->assertSee('Einlass scannen');
+        $this->get($basis.'/einlass')->assertOk()->assertSee('data-pause="1"', false);
+        $this->postJson($basis.'/einlass', ['code' => $karte->qrInhalt()])->assertJson(['farbe' => 'gruen', 'zaehler' => ['eingelassen' => 1]]);
+        $this->postJson($basis.'/einlass', ['code' => $karte->qrInhalt()])->assertJson(['farbe' => 'gelb']);
+        $this->assertSame('Abendkasse (Anna Abendkasse)', $karte->fresh()->eingelassen_durch);
+
+        $this->als($this->buero)->postJson($basis.'/einlass', ['code' => $karte->qrInhalt()])->assertForbidden();
+    }
+
     public function test_einlass_nur_fuer_station_einlass(): void
     {
         $this->amAbend();

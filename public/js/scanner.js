@@ -45,6 +45,9 @@
         var ergebnis = document.querySelector(form.getAttribute('data-ergebnis') || '#scan-ergebnis');
         var liste = form.getAttribute('data-liste') ? document.querySelector(form.getAttribute('data-liste')) : null;
         var json = form.getAttribute('data-json') === '1';
+        var pausieren = form.getAttribute('data-pause') === '1';
+        var pausiert = false;
+        var vollbild = null;
         var leinwand = document.createElement('canvas');
         var zeichner = leinwand.getContext('2d', { willReadFrequently: true });
         var strom = null;
@@ -74,6 +77,7 @@
                 return antwort.json();
             }).then(function (d) {
                 anzeigen(ergebnis, d);
+                if (pausieren && laeuft) { zeigeVollbild(d); }
                 ton(d.farbe);
                 if (liste && d.html !== undefined) { liste.innerHTML = d.html; }
                 if (d.zaehler) {
@@ -92,9 +96,39 @@
             });
         }
 
+        /*
+         * Einlass: Nach jedem erkannten Code hält die Kamera an und das Ergebnis füllt den
+         * Bildschirm (Grün/Gelb/Rot). „Weiter scannen“ schaltet die Kamera wieder ein.
+         */
+        function zeigeVollbild(d) {
+            pausiert = true;
+            video.hidden = true;
+            if (!vollbild) {
+                vollbild = document.createElement('div');
+                vollbild.setAttribute('role', 'alertdialog');
+                vollbild.innerHTML = '<div class="scan-vollbild__inhalt"><strong></strong><span></span></div>'
+                    + '<button type="button" class="scan-vollbild__weiter">Weiter scannen</button>';
+                vollbild.querySelector('button').addEventListener('click', weiter);
+                document.body.appendChild(vollbild);
+            }
+            vollbild.className = 'scan-vollbild scan-ergebnis--' + (d.farbe || 'rot');
+            vollbild.querySelector('strong').textContent = d.titel || '';
+            vollbild.querySelector('span').textContent = d.text || '';
+            vollbild.hidden = false;
+            vollbild.querySelector('button').focus();
+        }
+
+        function weiter() {
+            if (vollbild) { vollbild.hidden = true; }
+            pausiert = false;
+            // Eine noch vor der Kamera liegende Karte erst nach dem Wegnehmen erneut prüfen.
+            zuletztGesehen = Date.now();
+            if (laeuft) { video.hidden = false; }
+        }
+
         function schleife() {
             if (!laeuft) { return; }
-            if (!beschaeftigt && video.readyState >= 2 && video.videoWidth > 0) {
+            if (!beschaeftigt && !pausiert && video.readyState >= 2 && video.videoWidth > 0) {
                 var faktor = Math.min(1, 720 / video.videoWidth);
                 leinwand.width = Math.round(video.videoWidth * faktor);
                 leinwand.height = Math.round(video.videoHeight * faktor);
@@ -139,6 +173,8 @@
 
         function stoppen() {
             laeuft = false;
+            pausiert = false;
+            if (vollbild) { vollbild.hidden = true; }
             if (strom) { strom.getTracks().forEach(function (t) { t.stop(); }); }
             strom = null;
             video.hidden = true;

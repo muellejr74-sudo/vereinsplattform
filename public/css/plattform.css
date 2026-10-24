@@ -330,3 +330,13 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .kasse-frei { font-size: 1.15rem; color: var(--farbe-text); }
 .kasse-frei strong { font-size: 1.9rem; margin-left: 0.15rem; }
 .kasse-zahlen span + span::before { content: "· "; }
+
+/* Einlass: Ergebnis bildschirmfüllend, bis „Weiter scannen“ gedrückt wird */
+.scan-vollbild { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 2rem; padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom)); color: #fff; text-align: center; }
+.scan-vollbild[hidden] { display: none; }
+.scan-vollbild__inhalt { display: flex; flex-direction: column; gap: 0.75rem; }
+.scan-vollbild__inhalt strong { font-size: 2.4rem; line-height: 1.15; }
+.scan-vollbild__inhalt span { font-size: 1.25rem; }
+.scan-vollbild__weiter { font: inherit; font-size: 1.3rem; font-weight: 700; padding: 1.1rem; border-radius: var(--radius); border: 3px solid currentColor; background: rgba(255, 255, 255, 0.92); color: #1b1b18; cursor: pointer; }
+.scan-vollbild.scan-ergebnis--gelb { color: #1b1b18; }
+.kasse-zahlen--einfach span + span::before { content: none; }

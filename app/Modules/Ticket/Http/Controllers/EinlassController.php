@@ -24,10 +24,14 @@ class EinlassController extends Controller
             return redirect()->route('station');
         }
 
+        $akteur = $this->einsatz->akteur($geraet);
+
         return view('ticket::einlass', [
-            'geraet' => $geraet,
-            'akteur' => $this->einsatz->akteur($geraet),
-            'zaehler' => $this->einlass->zaehler($geraet),
+            'v' => $geraet->vorstellung,
+            'unterzeile' => $akteur !== $geraet->station->name ? $akteur : null,
+            'zaehler' => $this->einlass->zaehler($geraet->vorstellung),
+            'aktion' => route('station.einlass'),
+            'station' => true,
         ]);
     }
 
@@ -41,8 +45,8 @@ class EinlassController extends Controller
         }
 
         $code = (string) $request->validate(['code' => ['required', 'string', 'max:200']])['code'];
-        $ergebnis = $this->einlass->scannen($geraet, $code, $this->einsatz->akteur($geraet));
-        $zaehler = $this->einlass->zaehler($geraet);
+        $ergebnis = $this->einlass->scannen($geraet->vorstellung, $code, $this->einsatz->akteur($geraet));
+        $zaehler = $this->einlass->zaehler($geraet->vorstellung);
 
         if ($request->expectsJson()) {
             return response()->json($ergebnis + ['zaehler' => $zaehler]);
