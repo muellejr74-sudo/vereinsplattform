@@ -14,7 +14,7 @@
                 $erste = $vorstellungen->firstWhere('id', (int) old('vorstellung_id', $vorauswahl)) ?? $vorstellungen->first();
                 $art = old('art', $einstellungen->reservierung_standard);
             @endphp
-            <form method="post" action="{{ route('tickets.reservierungen.store') }}" class="formular" id="reservierung">
+            <form method="post" action="{{ route('tickets.reservierungen.store') }}" class="formular" id="reservierung" data-frei-aus="#vorstellung_id">
                 @csrf
                 <label for="verkaufsstelle_id">Angenommen von</label>
                 <select id="verkaufsstelle_id" name="verkaufsstelle_id">
@@ -23,9 +23,9 @@
                 </select>
 
                 <label for="vorstellung_id">Vorstellung</label>
-                <select id="vorstellung_id" name="vorstellung_id" required onchange="var v = this.selectedOptions[0].dataset.veranstaltung; this.form.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== v; e.querySelectorAll('input').forEach(function (i) { i.disabled = e.hidden; }); });">
+                <select id="vorstellung_id" name="vorstellung_id" required onchange="var v = this.selectedOptions[0].dataset.veranstaltung; this.form.querySelectorAll('[data-veranstaltung]').forEach(function (e) { e.hidden = e.dataset.veranstaltung !== v; e.querySelectorAll('input').forEach(function (i) { i.disabled = e.hidden; }); }); this.form.dispatchEvent(new Event('input'));">
                     @foreach ($vorstellungen as $v)
-                        <option value="{{ $v->id }}" data-veranstaltung="{{ $v->veranstaltung_id }}" @selected($erste->id === $v->id)>{{ $v->veranstaltung->name }} – {{ $v->anzeige() }}</option>
+                        <option value="{{ $v->id }}" data-veranstaltung="{{ $v->veranstaltung_id }}" @if (($frei[$v->id] ?? null) !== null) data-frei="{{ $frei[$v->id] }}" @endif @selected($erste->id === $v->id)>{{ $v->veranstaltung->name }} – {{ $v->anzeige() }}</option>
                     @endforeach
                 </select>
 

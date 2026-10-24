@@ -35,8 +35,52 @@
         }
 
         minus.addEventListener('click', function () { aendern(-1); });
+        feld.mengeKnopfPlus = plus;
         plus.addEventListener('click', function () { aendern(1); });
         // Ein Tipp ins Feld markiert die Zahl, damit man direkt überschreiben kann.
         feld.addEventListener('focus', function () { feld.select(); });
+    });
+
+    /*
+     * Sofort-Prüfung gegen die freien Plätze: Formular mit data-frei="10" oder
+     * data-frei-aus="#auswahl" (Zahl steht an der gewählten Option). Der Server prüft
+     * beim Absenden trotzdem noch einmal – das hier ist nur die schnelle Rückmeldung.
+     */
+    document.querySelectorAll('form[data-frei], form[data-frei-aus]').forEach(function (form) {
+        var hinweis = document.createElement('div');
+        hinweis.className = 'meldung meldung--fehler';
+        hinweis.setAttribute('role', 'alert');
+        hinweis.hidden = true;
+        var felder = form.querySelectorAll('input[data-menge]');
+        if (!felder.length) { return; }
+        var bloecke = form.querySelectorAll('[data-veranstaltung]:not(option)');
+        var letztes = bloecke.length ? bloecke[bloecke.length - 1] : (felder[felder.length - 1].closest('.mengen-zeile') || felder[felder.length - 1]);
+        letztes.parentNode.insertBefore(hinweis, letztes.nextSibling);
+
+        function frei() {
+            if (form.dataset.frei !== undefined) { return parseInt(form.dataset.frei, 10); }
+            var auswahl = document.querySelector(form.dataset.freiAus);
+            var option = auswahl && auswahl.selectedOptions[0];
+            return option && option.dataset.frei !== undefined ? parseInt(option.dataset.frei, 10) : null;
+        }
+
+        function pruefen() {
+            var grenze = frei();
+            var summe = 0;
+            felder.forEach(function (f) { if (!f.disabled) { summe += parseInt(f.value, 10) || 0; } });
+            var zuViel = grenze !== null && summe > grenze;
+            hinweis.hidden = !zuViel;
+            if (zuViel) {
+                hinweis.textContent = summe + ' Karten gewählt, aber nur noch ' + grenze + ' frei – bitte ' + (summe - grenze) + ' weniger.';
+            }
+            form.querySelectorAll('button[type=submit]').forEach(function (k) { k.disabled = zuViel; });
+            felder.forEach(function (f) {
+                if (f.mengeKnopfPlus) { f.mengeKnopfPlus.disabled = grenze !== null && summe >= grenze; }
+            });
+        }
+
+        form.addEventListener('input', pruefen);
+        form.addEventListener('change', pruefen);
+        pruefen();
     });
 })();

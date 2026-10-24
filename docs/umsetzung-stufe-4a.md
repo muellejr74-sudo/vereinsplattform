@@ -21,6 +21,7 @@ Freigegeben am 24.10.2026 (P-5.4). Fachliche Grundlage: E1, E4b, E40–E46a, E11
 | T4a-13 | Hinterlegte **Freikarten-Stapel des Vereins** können an der Abendkasse ausgegeben werden (auch teilweise). | E114. |
 | T4a-15 | **Abendkasse mit Startmenü** (Wunsch bei der Abnahme, 24.10.2026): große Knöpfe „Karten direkt verkaufen“, „Reservierung abholen“, „Gedruckte Karte verkaufen“, „Freikarten ausgeben“ (nur wenn vorhanden), „Nicht abgeholte Reservierungen“. Jede Aufgabe hat eine eigene kurze Seite; nach jedem Vorgang geht es zurück ins Menü. | Am Handy schneller, kein Scrollen. |
 | T4a-16 | **Plus-/Minus-Knöpfe** an allen Mengenfeldern (Abendkasse, Abholung, Reservierung, Bestellung, Freikarten) – kleines Skript `public/js/mengen.js`; ohne JavaScript bleibt das normale Zahlenfeld. | Wunsch bei der Abnahme: am Handy schneller. |
+| T4a-17 | **Sofort-Prüfung gegen die freien Plätze** (Abendkasse, Reservierung, Bestätigen der Druckstelle): Übersteigt die gewählte Menge die freien Plätze, erscheint sofort ein roter Hinweis, Plus und Absenden sind gesperrt. Der Server prüft beim Absenden weiterhin unter Sperre. | Wunsch bei der Abnahme: Überbuchung sofort sehen. |
 | T4a-14 | Rechte: „Abendkasse“ und „Stornieren“ aktiv; **neues sensibles Recht „Zahlungseingang vermerken“** (E125). „Auswertungen“ und „Abschluss“ folgen mit Stufe 4b. | |
 
 ## Ehrlicher Hinweis zu den Tests

@@ -12,7 +12,7 @@
         @if ($kategorien->isEmpty())
             <p>Für diese Veranstaltung sind keine Kategorien angelegt.</p>
         @else
-            <form method="post" action="{{ route('tickets.abendkasse.verkauf', $v) }}" class="formular" id="verkauf"
+            <form method="post" action="{{ route('tickets.abendkasse.verkauf', $v) }}" class="formular" id="verkauf" @if ($zahlen['frei'] !== null) data-frei="{{ $zahlen['frei'] }}" @endif
                   oninput="var s = 0; this.querySelectorAll('[data-preis]').forEach(function (e) { s += (parseInt(e.value, 10) || 0) * parseInt(e.dataset.preis, 10); }); document.getElementById('verkauf-summe').textContent = (s / 100).toFixed(2).replace('.', ',') + ' €';">
                 @csrf
                 @foreach ($kategorien as $k)

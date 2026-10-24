@@ -65,7 +65,7 @@ class ReservierungenController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, Kontingent $kontingent): View
     {
         $benutzer = $request->user();
         abort_unless($this->zugriff->darfReservieren($benutzer), 403);
@@ -83,6 +83,7 @@ class ReservierungenController extends Controller
             'einstellungen' => $einstellungen,
             'vorauswahl' => (int) $request->query('vorstellung'),
             'frist' => today()->addDays($einstellungen->zahlungsfrist_tage)->toDateString(),
+            'frei' => $vorstellungen->mapWithKeys(fn ($v) => [$v->id => $kontingent->frei($v)])->all(),
         ]);
     }
 

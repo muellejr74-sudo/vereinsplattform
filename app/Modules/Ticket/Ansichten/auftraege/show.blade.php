@@ -29,7 +29,7 @@
         <section class="karte">
             <h2>Bestätigen</h2>
             <p>Kontingent: {{ $zahlen['kontingent'] ?? 'nicht festgelegt' }} · belegt: {{ $zahlen['belegt'] }} · <strong>frei: {{ $zahlen['frei'] ?? '–' }}</strong></p>
-            <form method="post" action="{{ route('tickets.auftraege.bestaetigen', $auftrag) }}" class="formular">
+            <form method="post" action="{{ route('tickets.auftraege.bestaetigen', $auftrag) }}" class="formular" @if ($zahlen['frei'] !== null) data-frei="{{ $zahlen['frei'] }}" @endif>
                 @csrf
                 @foreach ($auftrag->positionen as $p)
                     <div class="mengen-zeile">

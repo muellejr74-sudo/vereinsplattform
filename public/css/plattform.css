@@ -319,3 +319,4 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .menge__knopf:active { transform: scale(0.96); }
 .menge > input[data-menge] { width: 4.5rem !important; flex: 0 0 4.5rem; }
 .menge > .menge__knopf { flex: 0 0 3rem; }
+.menge__knopf:disabled { opacity: 0.35; cursor: not-allowed; }
