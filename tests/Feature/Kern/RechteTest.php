@@ -127,6 +127,7 @@ class RechteTest extends TestCase
             $this->assertFalse(Rechtekatalog::gibt($recht));
         }
         $this->assertTrue(Rechtekatalog::istVerfuegbar('benutzer.verwalten'));
-        $this->assertFalse(Rechtekatalog::istVerfuegbar('ticket.drucken'));
+        $this->assertTrue(Rechtekatalog::istVerfuegbar('ticket.drucken'));
+        $this->assertFalse(Rechtekatalog::istVerfuegbar('saal.artikel'));
     }
 }

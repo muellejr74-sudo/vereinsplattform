@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('titel', config('app.name')) – {{ config('app.name') }}</title>
-    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('css/plattform.css') }}?v=4">
     @php
         // Vereinsdesign (E76): Farben aus der Datenbank, nur wenn ein Verein aktiv ist.
         $aktiverVereinDesign = app(\App\Modules\Kern\Mandanten\Mandantenkontext::class)->mandant();
@@ -33,6 +33,9 @@
                 <nav class="hauptmenue" aria-label="Hauptmenü">
                     <a href="{{ route('startseite') }}">Start</a>
                     @if ($aktiverVereinDesign)
+                        @can('tickets.nutzen')
+                            <a href="{{ route('tickets.uebersicht') }}">Tickets</a>
+                        @endcan
                         @can('verein.verwalten')
                             <a href="{{ route('verein.uebersicht') }}">Verein</a>
                         @endcan

@@ -108,6 +108,17 @@ class Protokoll
         'tisch.uebernommen' => 'Tisch übernommen',
         'tisch.abgegeben' => 'Tisch an andere Veranstaltung abgegeben',
         'tisch.geloest' => 'Tischzuordnung gelöst',
+        'ticket.preis_geaendert' => 'Ticketpreis/Kategorie geändert',
+        'ticket.kontingent_geaendert' => 'Kontingent geändert',
+        'ticket.verkaufsstelle_angelegt' => 'Verkaufsstelle angelegt',
+        'ticket.verkaufsstelle_geaendert' => 'Verkaufsstelle geändert',
+        'ticket.auftrag_angefordert' => 'Kartenauftrag angefordert',
+        'ticket.auftrag_bestaetigt' => 'Kartenauftrag bestätigt (Karten erzeugt)',
+        'ticket.auftrag_abgelehnt' => 'Kartenauftrag abgelehnt',
+        'ticket.auftrag_zurueckgezogen' => 'Kartenauftrag zurückgezogen',
+        'ticket.gedruckt' => 'Karten gedruckt',
+        'ticket.nachdruck' => 'Karte nachgedruckt',
+        'ticket.ausgegeben' => 'Karten übergeben',
     ];
 
     public static function bezeichnung(string $aktion): string

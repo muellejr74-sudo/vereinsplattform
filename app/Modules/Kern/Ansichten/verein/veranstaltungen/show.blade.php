@@ -5,7 +5,10 @@
 @section('inhalt')
     <div class="titelzeile">
         <h1>{{ $veranstaltung->name }}</h1>
-        <a class="knopf knopf--zweit" href="{{ route('verein.veranstaltungen.edit', $veranstaltung) }}">Bearbeiten</a>
+        <div class="knopfzeile" style="margin:0">
+            @can('tickets.nutzen')<a class="knopf knopf--zweit" href="{{ route('tickets.veranstaltung', $veranstaltung) }}">Tickets &amp; Preise</a>@endcan
+            <a class="knopf knopf--zweit" href="{{ route('verein.veranstaltungen.edit', $veranstaltung) }}">Bearbeiten</a>
+        </div>
     </div>
     @include('kern::teile.fehler')
     @if ($laufend)

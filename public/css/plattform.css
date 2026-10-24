@@ -274,4 +274,9 @@ a { color: var(--farbe-primaer); }
 }
 .station-knopf strong { font-size: 1.1rem; color: var(--farbe-primaer); }
 .station-knopf:disabled { opacity: 0.55; cursor: not-allowed; border-color: var(--farbe-rand); }
+.knopf:disabled { opacity: 0.45; cursor: not-allowed; }
 .tischnummer { font-size: 1.5rem; font-weight: 700; }
+
+/* Stufe 3: Ticketverwaltung */
+.vorstellungsblock { border-top: 1px solid var(--farbe-rand); padding-top: 0.75rem; margin-top: 0.75rem; }
+.vorstellungsblock h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
