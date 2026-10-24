@@ -320,3 +320,13 @@ a.station-knopf { text-decoration: none; color: var(--farbe-text); }
 .menge > input[data-menge] { width: 4.5rem !important; flex: 0 0 4.5rem; }
 .menge > .menge__knopf { flex: 0 0 3rem; }
 .menge__knopf:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Abendkasse: kompakter Kopf (Wunsch des Betreibers) */
+.kasse-kopf { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.kasse-kopf h1 { margin: 0; }
+.symbol-knopf { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border: 1px solid var(--farbe-primaer); border-radius: var(--radius); color: var(--farbe-primaer); background: #fff; flex: 0 0 auto; }
+.kasse-termin { margin: 0.25rem 0 0; color: #555; }
+.kasse-zahlen { display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0.6rem; margin: 0.4rem 0 0.25rem; font-size: 0.9rem; color: #555; white-space: nowrap; }
+.kasse-frei { font-size: 1.15rem; color: var(--farbe-text); }
+.kasse-frei strong { font-size: 1.9rem; margin-left: 0.15rem; }
+.kasse-zahlen span + span::before { content: "· "; }

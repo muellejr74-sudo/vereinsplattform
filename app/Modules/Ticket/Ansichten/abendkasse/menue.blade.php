@@ -3,12 +3,14 @@
 @section('titel', 'Abendkasse')
 
 @section('inhalt')
-    <div class="titelzeile">
+    <div class="kasse-kopf">
         <h1>Abendkasse</h1>
-        <a class="knopf knopf--zweit" href="{{ route('tickets.abendkasse.index') }}">Vorstellung wechseln</a>
+        <a class="symbol-knopf" href="{{ route('tickets.abendkasse.index') }}" title="Vorstellung wechseln" aria-label="Vorstellung wechseln">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>
+        </a>
     </div>
-    <p><strong>{{ $v->veranstaltung->name }}</strong> · {{ $v->anzeige() }}</p>
-    <p class="zaehler">Frei: <strong>{{ $zahlen['frei'] ?? '–' }}</strong> · belegt {{ $zahlen['belegt'] }} von {{ $zahlen['kontingent'] ?? '–' }} · eingelassen {{ $zahlen['eingelassen'] }}</p>
+    <p class="kasse-termin" title="{{ $v->veranstaltung->name }}">{{ $v->anzeige() }}</p>
+    <p class="kasse-zahlen"><span class="kasse-frei">Frei <strong>{{ $zahlen['frei'] ?? '–' }}</strong></span><span>belegt {{ $zahlen['belegt'] }}/{{ $zahlen['kontingent'] ?? '–' }}</span><span>eingelassen {{ $zahlen['eingelassen'] }}</span></p>
     @include('kern::teile.fehler')
 
     <nav class="menue-knoepfe" aria-label="Abendkasse">
