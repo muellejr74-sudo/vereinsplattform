@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 
 /**
- * Stufe 0: Die Startseite ist erreichbar, deutschsprachig und nutzt das
+ * Stufe 0/1a: Die Startseite ist erreichbar, deutschsprachig und nutzt das
  * Plattform-Stylesheet.
  */
 class StartseiteTest extends TestCase

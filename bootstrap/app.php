@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Kern\Http\Middleware\NurSuperAdmin;
+use App\Modules\Kern\Http\Middleware\SetzeMandantenkontext;
+use App\Modules\Kern\Http\Middleware\ZweiFaktorEingerichtet;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Aktiven Verein bei jeder Anfrage setzen und prüfen (Mandantentrennung, E14a).
+        $middleware->appendToGroup('web', SetzeMandantenkontext::class);
+
+        $middleware->alias([
+            'superadmin' => NurSuperAdmin::class,
+            'zweifaktor' => ZweiFaktorEingerichtet::class,
+        ]);
+
+        $middleware->redirectGuestsTo(fn () => route('anmeldung'));
+        $middleware->redirectUsersTo(fn () => route('startseite'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

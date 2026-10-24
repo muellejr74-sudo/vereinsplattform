@@ -1,8 +1,16 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Modules\Kern\Models\Protokolleintrag;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+| Zeitgesteuerte Aufgaben
+|--------------------------------------------------------------------------
+|
+| Werden vom Cronjob im Minutentakt angestoßen ("php artisan schedule:run").
+|
+*/
+
+// Protokolleinträge älter als 2 Jahre automatisch löschen (E89).
+Schedule::command('model:prune', ['--model' => [Protokolleintrag::class]])->dailyAt('03:15');

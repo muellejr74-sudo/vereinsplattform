@@ -42,4 +42,6 @@ Sie liegen im Claude-Projekt „Ticketverkauf“:
 
 ## Hinweis zur Entwicklungsumgebung
 
-In der Cloud-Arbeitsumgebung von Claude ist der Paketserver packagist.org gesperrt. Abhängigkeiten werden deshalb **nicht lokal installiert**; Tests laufen über GitHub Actions (`.github/workflows/tests.yml`). Keine Installationsskripte aus dem Internet ausführen.
+In der Cloud-Arbeitsumgebung von Claude ist der Paketserver packagist.org gesperrt. Maßgeblich sind die Tests über GitHub Actions (`.github/workflows/tests.yml`, MySQL). Keine Installationsskripte aus dem Internet ausführen.
+
+Für schnelle lokale Testläufe (SQLite) können die Pakete **exakt in den Versionen aus `composer.lock`** direkt aus ihren GitHub-Quellen geholt werden (`git fetch --depth 1` auf den in der Lock-Datei eingetragenen Stand, danach `composer dump-autoload`). Es wird dabei nichts aufgelöst oder aktualisiert. Neue Pakete werden nur nach Begründung und mit Eintrag in den technischen Notizen der Stufe aufgenommen.

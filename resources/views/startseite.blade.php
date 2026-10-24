@@ -1,11 +1,11 @@
 @extends('layouts.basis')
 
-@section('titel', config('app.name'))
+@section('titel', 'Willkommen')
 
 @section('inhalt')
-    <section class="karte">
+    <section class="karte karte--schmal">
         <h1>Willkommen bei der {{ config('app.name') }}</h1>
-        <p>Die Plattform befindet sich im Aufbau.</p>
-        <p class="hinweis">Stufe 0 – Grundgerüst</p>
+        <p>Hier organisieren Vereine ihre Veranstaltungen: Eintrittskarten, Bestellungen im Saal und das digitale Gästeportal.</p>
+        <p><a class="knopf" href="{{ route('anmeldung') }}">Anmelden</a></p>
     </section>
 @endsection
